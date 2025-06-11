@@ -58,9 +58,6 @@
       "eas": {
         "projectId": "de4b266c-08a2-4544-8cea-1293f12f3687"
       }
-    },
-    "ignite": {
-      "version": "10.5.3"
     }
   }
 }
