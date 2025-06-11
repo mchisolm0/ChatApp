@@ -1,65 +1,66 @@
 {
-  "name": "ChatApp",
-  "displayName": "ChatApp",
-  "slug": "ChatApp",
-  "scheme": "chatapp",
-  "version": "1.0.0",
-  "orientation": "portrait",
-  "userInterfaceStyle": "automatic",
-  "icon": "./assets/images/app-icon-all.png",
-  "updates": {
-    "fallbackToCacheTimeout": 0
-  },
-  "newArchEnabled": true,
-  "jsEngine": "hermes",
-  "assetBundlePatterns": [
-    "**/*"
-  ],
-  "android": {
-    "icon": "./assets/images/app-icon-android-legacy.png",
-    "package": "how.sowinghope.chatapp",
-    "adaptiveIcon": {
-      "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
-      "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
+  "expo": {
+    "name": "ChatApp",
+    "slug": "chatapp",
+    "scheme": "chatapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/app-icon-all.png",
+    "updates": {
+      "fallbackToCacheTimeout": 0
     },
-    "allowBackup": false
-  },
-  "ios": {
-    "icon": "./assets/images/app-icon-ios.png",
-    "supportsTablet": true,
-    "bundleIdentifier": "how.sowinghope.chatapp"
-  },
-  "web": {
-    "favicon": "./assets/images/app-icon-web-favicon.png",
-    "bundler": "metro"
-  },
-  "plugins": [
-    "expo-localization",
-    "expo-font",
-    [
-      "expo-splash-screen",
-      {
-        "image": "./assets/images/app-icon-android-adaptive-foreground.png",
-        "imageWidth": 300,
-        "resizeMode": "contain",
-        "backgroundColor": "#191015"
-      }
+    "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "assetBundlePatterns": [
+      "**/*"
     ],
-    "expo-router"
-  ],
-  "experiments": {
-    "tsconfigPaths": true,
-    "typedRoutes": true
-  },
-  "extra": {
-    "router": {
-      "origin": false
+    "android": {
+      "icon": "./assets/images/app-icon-android-legacy.png",
+      "package": "how.sowinghope.chatapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
+        "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
+      },
+      "allowBackup": false
     },
-    "eas": {
-      "projectId": "de4b266c-08a2-4544-8cea-1293f12f3687"
+    "ios": {
+      "icon": "./assets/images/app-icon-ios.png",
+      "supportsTablet": true,
+      "bundleIdentifier": "how.sowinghope.chatapp"
+    },
+    "web": {
+      "favicon": "./assets/images/app-icon-web-favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-localization",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/app-icon-android-adaptive-foreground.png",
+          "imageWidth": 300,
+          "resizeMode": "contain",
+          "backgroundColor": "#191015"
+        }
+      ],
+      "expo-router"
+    ],
+    "experiments": {
+      "tsconfigPaths": true,
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "de4b266c-08a2-4544-8cea-1293f12f3687"
+      }
+    },
+    "ignite": {
+      "version": "10.5.3"
     }
-  },
-  "ignite": {
-    "version": "10.5.3"
   }
 }
