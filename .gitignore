@@ -75,6 +75,7 @@ expo-env.d.ts
 
 ## Secrets
 npm-debug.*
+.env
 *.jks
 *.p8
 *.p12

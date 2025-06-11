@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "main": "expo-router/entry",
+  "license": "MIT",
   "scripts": {
     "compile": "tsc --noEmit -p . --pretty",
     "lint": "eslint . --fix",
