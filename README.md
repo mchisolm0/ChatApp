@@ -1,5 +1,5 @@
 # To Do
-[] Create PR for initial AI feature
+[X] Create PR for initial AI feature
 [] Rebase and retry SDK 53 upgrade
 [] Create auth flow with Clerk
 [] Setup database with Convex
