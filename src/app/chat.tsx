@@ -52,6 +52,8 @@ export default function ChatScreen() {
               },
             } as unknown as React.ChangeEvent<HTMLInputElement>)
           }
+          // TODO Verify e.preventDefault() is needed. It is in the docs but
+          // CodeRabbit claims it will throw at runtime (even though it works)
           onSubmitEditing={e => {
             handleSubmit(e);
             e.preventDefault();
