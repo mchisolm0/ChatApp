@@ -5,10 +5,12 @@ export const generateAPIUrl = (relativePath: string) => {
 
   if (process.env.NODE_ENV === 'development') {
     // For development builds, use localhost if experienceUrl is undefined
+    // TODO Remove Constants.experienceUrl because I'm using CNG not Expo Go
     if (!Constants.experienceUrl) {
       return `http://localhost:8081${path}`;
     }
-    return Constants.experienceUrl.replace('exp://', 'http://');
+    const base = Constants.experienceUrl.replace('exp://', 'http://').replace(/\/$/, '');
+    return `${base}${path}`;
   }
 
   if (!process.env.EXPO_PUBLIC_API_BASE_URL) {
