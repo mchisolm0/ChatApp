@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "ChatApp",
-    "slug": "chatapp",
-    "owner": "how.sowinghope",
+    "slug": "ChatApp",
+    "owner": "mchisolm0",
     "scheme": "chatapp",
     "version": "1.0.0",
     "orientation": "portrait",
