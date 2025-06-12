@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Slot, SplashScreen } from "expo-router"
 import { KeyboardProvider } from "react-native-keyboard-controller"
-
+import { tokenCache } from "@clerk/clerk-expo/token-cache"
 import { useInitialRootStore } from "@/models"
 import { useFonts } from "@expo-google-fonts/space-grotesk"
 import { customFontsToLoad } from "@/theme"
 import { initI18n } from "@/i18n"
 import { loadDateFnsLocale } from "@/utils/formatDate"
 import { useThemeProvider } from "@/utils/useAppTheme"
+import { ClerkProvider } from "@clerk/clerk-expo"
 import "@/utils/polyfills"
 
 SplashScreen.preventAutoHideAsync()
@@ -53,10 +54,14 @@ export default function Root() {
   }
 
   return (
-    <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
-      <KeyboardProvider>
-        <Slot />
-      </KeyboardProvider>
-    </ThemeProvider>
+    <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string} tokenCache={tokenCache}>
+      <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
+        <KeyboardProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <RootLayout />
+        </GestureHandlerRootView>
+        </KeyboardProvider>
+      </ThemeProvider>
+    </ClerkProvider>
   )
 }
