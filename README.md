@@ -1,8 +1,16 @@
+# To Do
+[] Create PR for initial AI feature
+[] Rebase and retry SDK 53 upgrade
+[] Create auth flow with Clerk
+[] Setup database with Convex
+[] Trial Drawer for listing chat threads
+[] Create dropdown model picker just above TextInput
+
 # Welcome to your new ignited app!
 
 > The latest and greatest boilerplate for Infinite Red opinions
 
-This is the boilerplate that [Infinite Red](https://infinite.red) uses as a way to test bleeding-edge changes to our React Native stack.
+This is based on the boilerplate that [Infinite Red](https://infinite.red) uses as a way to test bleeding-edge changes to our React Native stack.
 
 - [Quick start documentation](https://github.com/infinitered/ignite/blob/master/docs/boilerplate/Boilerplate.md)
 - [Full documentation](https://github.com/infinitered/ignite/blob/master/docs/README.md)
