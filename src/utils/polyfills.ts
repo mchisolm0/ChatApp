@@ -21,9 +21,8 @@ export async function setupPolyfills(): Promise<void> {
 }
 
 // Initialize polyfills
-if (Platform.OS !== 'web') {
-  setupPolyfills();
-}
+export const polyfillsReady: Promise<void> =
+  Platform.OS !== 'web' ? setupPolyfills() : Promise.resolve();
 
 export const polyfills = {
   setup: setupPolyfills
