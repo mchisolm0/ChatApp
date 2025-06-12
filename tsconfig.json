@@ -42,8 +42,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "src/utils/polyfills.js"  ],
+    "expo-env.d.ts",
+    "src/utils/polyfills.ts"
+  ],
   "exclude": [
     "node_modules",
     "test/**/*"
