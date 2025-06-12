@@ -5,6 +5,7 @@ import { isRTL } from "@/i18n"
 import { ThemedStyle } from "@/theme"
 import { useSafeAreaInsetsStyle } from "@/utils/useSafeAreaInsetsStyle"
 import { useAppTheme } from "@/utils/useAppTheme"
+import { Link } from "expo-router"
 
 const welcomeLogo = require("../../assets/images/logo.png")
 const welcomeFace = require("../../assets/images/welcome-face.png")
@@ -33,7 +34,9 @@ export default observer(function WelcomeScreen() {
       </View>
 
       <View style={[themed($bottomContainer), $bottomContainerInsets]}>
-        <Text tx="welcomeScreen:postscript" size="md" />
+        <Link href="/chat" asChild>
+          <Text tx="welcomeScreen:goToChat" size="md" />
+        </Link>
       </View>
     </Screen>
   )
