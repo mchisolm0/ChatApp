@@ -1,23 +1,12 @@
-import { observer } from "mobx-react-lite"
-import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
-import { Screen, Text } from "@/components"
-import { isRTL } from "@/i18n"
-import { ThemedStyle } from "@/theme"
-import { useSafeAreaInsetsStyle } from "@/utils/useSafeAreaInsetsStyle"
-import { useAppTheme } from "@/utils/useAppTheme"
-import { Link } from "expo-router"
-
-const welcomeLogo = require("../../assets/images/logo.png")
-const welcomeFace = require("../../assets/images/welcome-face.png")
-
 import { generateAPIUrl } from '@/utils/utils';
 import { useChat } from '@ai-sdk/react';
 import { fetch as expoFetch } from 'expo/fetch';
-import { TextInput, ScrollView } from 'react-native';
+import { View, TextInput, ScrollView, Text, ViewStyle, TextStyle } from 'react-native';
+import { Screen } from '@/components';
 import { useAppTheme } from '@/utils/useAppTheme';
-import { ThemedStyle } from '@/theme';
+import { spacing, ThemedStyle } from '@/theme';
+import { Drawer } from 'expo-router/drawer';
 
-// TODO Refactor into component to reuse between chat and chat/[id]
 export default function ChatScreen() {
   const { messages, error, handleInputChange, input, handleSubmit } = useChat({
     fetch: expoFetch as unknown as typeof globalThis.fetch,
@@ -28,51 +17,24 @@ export default function ChatScreen() {
   const { theme, themed } = useAppTheme()
 
   return (
-    <View style={themed($container)}>
-      <View
-        style={themed($topContainer)}
-      >
-        <ScrollView style={{ flex: 1 }}>
-          {messages.map(m => (
-            <View key={m.id} style={{ marginVertical: 8 }}>
-              <View>
-                <Text style={{ fontWeight: 700 }}>{m.role}</Text>
-                <Text>{m.content}</Text>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-
-      </View>
-      <View style={themed($bottomContainer)}>
-        {error && (
-          <View style={themed($errorContainer)}>
-            <Text style={themed($errorText)}>{error.message}</Text>
-          </View>
-        )}
-        <TextInput
-          style={themed($input)}
-          placeholder="chatScreen:placeholderText"
-          value={input}
-          onChange={e =>
-            handleInputChange({
-              ...e,
-              target: {
-                ...e.target,
-                value: e.nativeEvent.text,
-              },
-            } as unknown as React.ChangeEvent<HTMLInputElement>)
-          }
-          // TODO Verify e.preventDefault() is needed. It is in the docs but
-          // CodeRabbit claims it will throw at runtime (even though it works)
-          onSubmitEditing={e => {
-            handleSubmit(e);
-            e.preventDefault();
+    <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
+      <Drawer>
+        <Drawer.Screen
+          name="chat" // This is the name of the page and must match the url from root
+          options={{
+            drawerLabel: 'New Chat',
+            title: 'New Chat',
           }}
-          autoFocus={true}
         />
-      </View>
-    </View>
+        <Drawer.Screen
+          name="chats/[id]" // This is the name of the page and must match the url from root
+          options={{
+            drawerLabel: 'User',
+            title: 'overview',
+          }}
+        />
+      </Drawer>
+    </Screen>
   );
 }
 
@@ -112,47 +74,4 @@ const $input: ThemedStyle<TextStyle> = ({ spacing }) => ({
   backgroundColor: 'white',
   margin: spacing.md,
   padding: spacing.md
-})
-
-const $container: ThemedStyle<ViewStyle> = ({ colors }) => ({
-  flex: 1,
-  backgroundColor: colors.background,
-})
-
-const $topContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flexShrink: 1,
-  flexGrow: 1,
-  flexBasis: "57%",
-  justifyContent: "center",
-  paddingHorizontal: spacing.lg,
-})
-
-const $bottomContainer: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  flexShrink: 1,
-  flexGrow: 0,
-  flexBasis: "43%",
-  backgroundColor: colors.palette.neutral100,
-  borderTopLeftRadius: 16,
-  borderTopRightRadius: 16,
-  paddingHorizontal: spacing.lg,
-  justifyContent: "space-around",
-})
-
-const $welcomeLogo: ThemedStyle<ImageStyle> = ({ spacing }) => ({
-  height: 88,
-  width: "100%",
-  marginBottom: spacing.xxl,
-})
-
-const $welcomeFace: ImageStyle = {
-  height: 169,
-  width: 269,
-  position: "absolute",
-  bottom: -47,
-  right: -80,
-  transform: [{ scaleX: isRTL ? -1 : 1 }],
-}
-
-const $welcomeHeading: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginBottom: spacing.md,
 })
