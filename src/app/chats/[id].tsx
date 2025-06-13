@@ -2,11 +2,10 @@ import { generateAPIUrl } from '@/utils/utils';
 import { useChat } from '@ai-sdk/react';
 import { fetch as expoFetch } from 'expo/fetch';
 import { View, TextInput, ScrollView, Text, ViewStyle, TextStyle } from 'react-native';
-import { Screen } from '@/components';
 import { useAppTheme } from '@/utils/useAppTheme';
-import { spacing, ThemedStyle } from '@/theme';
-import { Drawer } from 'expo-router/drawer';
+import { ThemedStyle } from '@/theme';
 
+// TODO Refactor into component to reuse between chat and chat/[id]
 export default function ChatScreen() {
   const { messages, error, handleInputChange, input, handleSubmit } = useChat({
     fetch: expoFetch as unknown as typeof globalThis.fetch,
@@ -17,24 +16,51 @@ export default function ChatScreen() {
   const { theme, themed } = useAppTheme()
 
   return (
-    <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
-      <Drawer>
-        <Drawer.Screen
-          name="index" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: 'New Chat',
-            title: 'New Chat',
+    <View style={themed($container)}>
+      <View
+        style={themed($topContainer)}
+      >
+        <ScrollView style={{ flex: 1 }}>
+          {messages.map(m => (
+            <View key={m.id} style={{ marginVertical: 8 }}>
+              <View>
+                <Text style={{ fontWeight: 700 }}>{m.role}</Text>
+                <Text>{m.content}</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+      </View>
+      <View style={themed($bottomContainer)}>
+        {error && (
+          <View style={themed($errorContainer)}>
+            <Text style={themed($errorText)}>{error.message}</Text>
+          </View>
+        )}
+        <TextInput
+          style={themed($input)}
+          placeholder="chatScreen:placeholderText"
+          value={input}
+          onChange={e =>
+            handleInputChange({
+              ...e,
+              target: {
+                ...e.target,
+                value: e.nativeEvent.text,
+              },
+            } as unknown as React.ChangeEvent<HTMLInputElement>)
+          }
+          // TODO Verify e.preventDefault() is needed. It is in the docs but
+          // CodeRabbit claims it will throw at runtime (even though it works)
+          onSubmitEditing={e => {
+            handleSubmit(e);
+            e.preventDefault();
           }}
+          autoFocus={true}
         />
-        <Drawer.Screen
-          name="chat/[id]" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: 'User',
-            title: 'overview',
-          }}
-        />
-      </Drawer>
-    </Screen>
+      </View>
+    </View>
   );
 }
 

@@ -11,6 +11,9 @@ const en = {
     exciting: "(ohh, this is exciting!)",
     goToChat: "Go to chat",
   },
+  chatScreen: {
+    placeholderText: "Type your message here...",
+  },
   errorScreen: {
     title: "Something went wrong!",
     friendlySubtitle:
