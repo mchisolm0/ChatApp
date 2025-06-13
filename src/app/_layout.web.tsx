@@ -10,7 +10,6 @@ import { loadDateFnsLocale } from "@/utils/formatDate"
 import { useThemeProvider } from "@/utils/useAppTheme"
 import { ClerkProvider } from "@clerk/clerk-expo"
 import "@/utils/polyfills"
-import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 SplashScreen.preventAutoHideAsync()
 
@@ -55,12 +54,10 @@ export default function Root() {
   }
 
   return (
-    <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string} tokenCache={tokenCache}>
+    <ClerkProvider tokenCache={tokenCache}>
       <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
         <KeyboardProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootLayout />
-        </GestureHandlerRootView>
+          <Slot />
         </KeyboardProvider>
       </ThemeProvider>
     </ClerkProvider>
