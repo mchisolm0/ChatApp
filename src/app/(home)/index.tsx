@@ -13,10 +13,10 @@ export default function Page() {
         <SignOutButton />
       </SignedIn>
       <SignedOut>
-        <Link href="/(auth)/sign-in">
+        <Link href="/sign-in">
           <Text>Sign in</Text>
         </Link>
-        <Link href="/(auth)/sign-up">
+        <Link href="/sign-up">
           <Text>Sign up</Text>
         </Link>
       </SignedOut>
