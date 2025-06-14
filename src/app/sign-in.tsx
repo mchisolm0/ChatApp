@@ -1,67 +1,133 @@
-import { useSignIn } from '@clerk/clerk-expo'
+import { useSignIn, useUser } from '@clerk/clerk-expo'
+import { observer } from 'mobx-react-lite'
+import { useStores } from '@/models'
+import { useAppTheme } from '@/utils/useAppTheme';
+import { ThemedStyle } from '@/theme';
 import { Link, useRouter } from 'expo-router'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { Button, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native'
+import React, { useEffect } from 'react'
+import * as Sentry from "@sentry/react-native";
+import { Screen } from '@/components';
 
-export default function Page() {
+const PageComponent: React.FC = () => {
   const { signIn, setActive, isLoaded } = useSignIn()
+  const { authStore } = useStores()
   const router = useRouter()
-
-  const [emailAddress, setEmailAddress] = React.useState('')
-  const [password, setPassword] = React.useState('')
+  const { themed } = useAppTheme()
 
   // Handle the submission of the sign-in form
+  const { user } = useUser()
+
+  // Update auth store when user data is available
+  useEffect(() => {
+    if (user) {
+      const email = user.primaryEmailAddress?.emailAddress || ''
+      const username = user.username || ''
+      authStore.setUserData(email, username)
+    }
+  }, [user])
+
   const onSignInPress = async () => {
     if (!isLoaded) return
-
-    // Start the sign-in process using the email and password provided
     try {
       const signInAttempt = await signIn.create({
-        identifier: emailAddress,
-        password,
+        identifier: authStore.emailAddress,
+        password: authStore.password,
       })
-
-      // If sign-in process is complete, set the created session as active
-      // and redirect the user
-      if (signInAttempt.status === 'complete') {
+      if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId })
-        router.replace('/')
-      } else {
-        // If the status isn't complete, check why. User might need to
-        // complete further steps.
-        console.error(JSON.stringify(signInAttempt, null, 2))
+        router.replace("/")
       }
-    } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
+    } catch (error: any) {
+      console.error('Sign in error:', error)
+      authStore.setProp('error', error?.errors?.[0]?.message || error?.message || 'Unknown error')
+      // Handle error (you might want to show this to the user)
     }
   }
 
   return (
-    <View>
+    <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
       <Text>Sign in</Text>
       <TextInput
         autoCapitalize="none"
-        value={emailAddress}
-        placeholder="Enter email"
-        onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
+        value={authStore.emailAddress}
+        placeholder="Email or username"
+        onChangeText={(text) => authStore.setEmail(text)}
+        style={themed($input)}
+        keyboardType="email-address"
+        autoComplete="username"
       />
       <TextInput
-        value={password}
+        value={authStore.password}
         placeholder="Enter password"
         secureTextEntry={true}
-        onChangeText={(password) => setPassword(password)}
+        onChangeText={(text) => authStore.setPassword(text)}
+        style={themed($input)}
       />
-      <TouchableOpacity onPress={onSignInPress}>
-        <Text>Continue</Text>
+      <TouchableOpacity style={themed($signInButton)} onPress={onSignInPress}>
+        <Text style={themed($signInText)}>Continue</Text>
       </TouchableOpacity>
-      <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+      <View style={{ display: 'flex', gap: 3 }}>
         <Text>Don't have an account?</Text>
-        <Link href="/sign-up">
-          <Text>Sign up</Text>
-        </Link>
+        <TouchableOpacity style={themed($signUpButton)} onPress={() => router.push('/sign-up')}>
+          <Text style={themed($signUpText)}>Sign Up</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+      <Button title='Try!' onPress={() => { Sentry.captureException(new Error('First error')) }} />
+    </Screen>
   )
 }
+
+const $container: ThemedStyle<ViewStyle> = (theme) => ({
+  flex: 1,
+  backgroundColor: theme.colors.background,
+  alignItems: 'center',
+  justifyContent: 'center',
+})
+
+const $signInButton: ThemedStyle<ViewStyle> = (theme) => ({
+  backgroundColor: theme.colors.palette.primary500,
+  paddingVertical: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.lg,
+  borderRadius: theme.spacing.sm,
+  alignItems: 'center',
+})
+
+const $signInText: ThemedStyle<TextStyle> = (theme) => ({
+  color: theme.colors.palette.neutral100,
+  fontSize: 16,
+  fontWeight: '600',
+})
+
+const $signUpButton: ThemedStyle<ViewStyle> = (theme) => ({
+  backgroundColor: theme.colors.palette.primary500,
+  paddingVertical: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.lg,
+  borderRadius: theme.spacing.sm,
+  alignItems: 'center',
+})
+
+const $signUpText: ThemedStyle<TextStyle> = (theme) => ({
+  color: theme.colors.palette.neutral100,
+  fontSize: 16,
+  fontWeight: '600',
+})
+
+const $input: ThemedStyle<TextStyle> = (theme) => ({
+  width: '80%',
+  height: 50,
+  borderWidth: 1,
+  borderColor: theme.colors.palette.neutral400,
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  marginBottom: 16,
+  color: theme.colors.text,
+  backgroundColor: theme.colors.background,
+})
+
+const $orText: ThemedStyle<TextStyle> = (theme) => ({
+  fontSize: 12,
+  color: theme.isDark ? theme.colors.palette.neutral400 : theme.colors.palette.neutral600,
+})
+
+export default observer(PageComponent)

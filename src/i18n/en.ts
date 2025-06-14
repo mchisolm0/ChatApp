@@ -13,6 +13,7 @@ const en = {
   },
   chatScreen: {
     placeholderText: "Type your message here...",
+    sendButton: "Send",
   },
   errorScreen: {
     title: "Something went wrong!",

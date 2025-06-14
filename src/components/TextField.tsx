@@ -149,7 +149,7 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
     $styles.row,
     $inputWrapperStyle,
     status === "error" && { borderColor: colors.error },
-    TextInputProps.multiline && { minHeight: 112 },
+    TextInputProps.multiline && { minHeight: 40, maxHeight: 300 },
     LeftAccessory && { paddingStart: 0 },
     RightAccessory && { paddingEnd: 0 },
     $inputWrapperStyleOverride,
@@ -212,6 +212,7 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
           ref={input}
           underlineColorAndroid={colors.transparent}
           textAlignVertical="top"
+          scrollEnabled={TextInputProps.multiline}
           placeholder={placeholderContent}
           placeholderTextColor={colors.textDim}
           {...TextInputProps}
@@ -256,13 +257,13 @@ const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
   overflow: "hidden",
 })
 
-const $inputStyle: ThemedStyle<ViewStyle> = ({ colors, typography, spacing }) => ({
+const $inputStyle: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => ({
   flex: 1,
   alignSelf: "stretch",
   fontFamily: typography.primary.normal,
   color: colors.text,
   fontSize: 16,
-  height: 24,
+  minHeight: 24,
   // https://github.com/facebook/react-native/issues/21720#issuecomment-532642093
   paddingVertical: 0,
   paddingHorizontal: 0,

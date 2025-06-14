@@ -15,6 +15,7 @@ import {
 } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
+import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 import { type ThemedStyle } from '@/theme';
 
 // interface ChatThread {
@@ -23,36 +24,31 @@ import { type ThemedStyle } from '@/theme';
 //   lastMessage?: string;
 // }
 import { ChatThread } from '@/data/mockData';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+import { SignOutButton } from './SignOutButton';
+import { SignedIn, SignedOut } from '@clerk/clerk-expo';
+import { useStores } from '@/models';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
   chatThreads: ChatThread[];
-  user: User | null;
   onLogin: () => void;
-  onLogout: () => void;
   onSearchChange: (query: string) => void;
   searchQuery: string;
 }
 
 export default function CustomDrawer({
   chatThreads,
-  user,
   onLogin,
-  onLogout,
   onSearchChange,
   searchQuery,
   ...props
 }: CustomDrawerProps) {
   const { themed } = useAppTheme();
+  const containerInsets = useSafeAreaInsetsStyle(['top', 'bottom']);
   const router = useRouter();
+  const { authStore } = useStores();
 
   const handleThreadPress = useCallback((threadId: string) => {
-    router.push(`/chats/${threadId}`);
+    router.push({ pathname: '/[threadId]', params: { threadId } });
     props.navigation.closeDrawer();
   }, [router, props.navigation]);
 
@@ -76,7 +72,7 @@ export default function CustomDrawer({
   };
 
   return (
-    <View style={themed($container)}>
+    <View style={[themed($container), containerInsets]}>
       {/* Search Section */}
       <View style={themed($searchContainer)}>
         <TextInput
@@ -104,19 +100,20 @@ export default function CustomDrawer({
 
       {/* User Section */}
       <View style={themed($userSection)}>
-        {user ? (
+        <SignedIn>
           <View style={themed($userInfo)}>
-            <Text style={themed($userName)}>{user.name}</Text>
-            <Text style={themed($userEmail)}>{user.email}</Text>
-            <TouchableOpacity style={themed($logoutButton)} onPress={onLogout}>
-              <Text style={themed($logoutText)}>Sign Out</Text>
-            </TouchableOpacity>
+            <View style={themed($user)}>
+              <Text style={themed($userName)}>{authStore.username}</Text>
+              <Text style={themed($userEmail)}>{authStore.emailAddress}</Text>
+            </View>
+            <SignOutButton />
           </View>
-        ) : (
-          <TouchableOpacity style={themed($loginButton)} onPress={onLogin}>
+        </SignedIn>
+        <SignedOut>
+          <TouchableOpacity style={themed($loginButton)} onPress={() => router.push('/sign-in')}>
             <Text style={themed($loginText)}>Sign In</Text>
           </TouchableOpacity>
-        )}
+        </SignedOut>
       </View>
     </View>
   );
@@ -171,7 +168,14 @@ const $userSection: ThemedStyle<ViewStyle> = (theme) => ({
 })
 
 const $userInfo: ThemedStyle<ViewStyle> = () => ({
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexDirection: 'row',
+})
+
+const $user: ThemedStyle<ViewStyle> = (theme) => ({
   alignItems: 'flex-start',
+  justifyContent: 'center',
 })
 
 const $userName: ThemedStyle<TextStyle> = (theme) => ({

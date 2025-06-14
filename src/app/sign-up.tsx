@@ -1,112 +1,171 @@
 import * as React from 'react'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { useSignUp } from '@clerk/clerk-expo'
+import { Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native'
+import { useSignUp, useUser } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
+import { observer } from 'mobx-react-lite'
+import { useStores } from '@/models'
+import { ThemedStyle } from '@/theme'
+import { useAppTheme } from '@/utils/useAppTheme';
+import { useEffect } from 'react';
+import { Screen } from '@/components';
 
-export default function SignUpScreen() {
+const SignUpScreen: React.FC = () => {
   const { isLoaded, signUp, setActive } = useSignUp()
+  const { user } = useUser()
   const router = useRouter()
+  const { authStore } = useStores()
+  const { themed } = useAppTheme()
 
-  const [emailAddress, setEmailAddress] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [pendingVerification, setPendingVerification] = React.useState(false)
-  const [code, setCode] = React.useState('')
+  // Update auth store when user data is available
+  useEffect(() => {
+    if (user) {
+      const email = user.primaryEmailAddress?.emailAddress || ''
+      const username = user.username || ''
+      authStore.setUserData(email, username)
+    }
+  }, [user])
+
+  // Local state for verification step
+  const [verifying, setVerifying] = React.useState(false)
+  const [pendingSessionId, setPendingSessionId] = React.useState<string | null>(null)
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
     if (!isLoaded) return
-
-    console.log(emailAddress, password)
-
-    // Start sign-up process using email and password provided
     try {
-      await signUp.create({
-        emailAddress,
-        password,
+      const signUpAttempt = await signUp.create({
+        emailAddress: authStore.emailAddress,
+        password: authStore.password,
       })
-
-      // Send user an email with verification code
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
-
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
-      setPendingVerification(true)
-    } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
-    }
-  }
-
-  // Handle submission of verification form
-  const onVerifyPress = async () => {
-    if (!isLoaded) return
-
-    try {
-      // Use the code the user provided to attempt verification
-      const signUpAttempt = await signUp.attemptEmailAddressVerification({
-        code,
-      })
-
-      // If verification was completed, set the session to active
-      // and redirect the user
-      if (signUpAttempt.status === 'complete') {
+      if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId })
-        router.replace('/')
+        router.replace("/")
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
-        console.error(JSON.stringify(signUpAttempt, null, 2))
+        // Prepare email verification
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" })
+        setPendingSessionId(signUpAttempt.createdSessionId || null)
+        setVerifying(true)
       }
-    } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
+    } catch (error: any) {
+      authStore.setProp('error', error?.errors?.[0]?.message || error?.message || String(error))
     }
   }
 
-  if (pendingVerification) {
-    return (
-      <>
-        <Text>Verify your email</Text>
-        <TextInput
-          value={code}
-          placeholder="Enter your verification code"
-          onChangeText={(code) => setCode(code)}
-        />
-        <TouchableOpacity onPress={onVerifyPress}>
-          <Text>Verify</Text>
-        </TouchableOpacity>
-      </>
-    )
+  // Handle verification code submission
+  const onVerifyCode = async () => {
+    authStore.setProp('error', undefined)
+    if (!isLoaded || !signUp || !setActive) return
+    try {
+      const verificationAttempt = await signUp.attemptEmailAddressVerification({ code: authStore.code })
+      if (verificationAttempt.status === "complete") {
+        await setActive({ session: verificationAttempt.createdSessionId })
+        router.replace("/")
+      } else {
+        authStore.setProp('error', "Verification not complete. Please check the code and try again.")
+      }
+    } catch (error: any) {
+      authStore.setProp('error', error?.errors?.[0]?.message || error?.message || String(error))
+    }
   }
 
   return (
-    <View>
-      <>
-        <Text>Sign up</Text>
-        <TextInput
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="Enter email"
-          onChangeText={(email) => setEmailAddress(email)}
-        />
-        <TextInput
-          value={password}
-          placeholder="Enter password"
-          secureTextEntry={true}
-          onChangeText={(password) => setPassword(password)}
-        />
-        <TouchableOpacity onPress={onSignUpPress}>
-          <Text>Continue</Text>
-        </TouchableOpacity>
-        <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-          <Text>Already have an account?</Text>
-          <Link href="/sign-in">
-            <Text>Sign in</Text>
-          </Link>
-        </View>
-      </>
-    </View>
+    <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
+      {verifying ? (
+        <>
+          <Text>Enter the verification code sent to your email:</Text>
+          <TextInput
+            value={authStore.code}
+            placeholder="Verification code"
+            onChangeText={(text) => authStore.setCode(text)}
+            autoCapitalize="none"
+            keyboardType="number-pad"
+            style={{ marginVertical: 12, borderWidth: 1, borderColor: '#ccc', padding: 8 }}
+          />
+          {authStore.error && <Text style={{ color: 'red' }}>{authStore.error}</Text>}
+          <TouchableOpacity style={themed($signUpButton)} onPress={onVerifyCode}>
+            <Text style={themed($signUpText)}>Verify</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text>Sign up</Text>
+          <TextInput
+            autoCapitalize="none"
+            value={authStore.emailAddress}
+            placeholder="Enter your email"
+            onChangeText={(text) => authStore.setEmail(text)}
+            style={themed($input)}
+            keyboardType="email-address"
+            autoComplete="email"
+          />
+          <TextInput
+            value={authStore.password}
+            placeholder="Enter password"
+            secureTextEntry={true}
+            onChangeText={(text) => authStore.setPassword(text)}
+            style={themed($input)}
+          />
+          {authStore.error && <Text style={{ color: 'red' }}>{authStore.error}</Text>}
+          <TouchableOpacity style={themed($signUpButton)} onPress={onSignUpPress}>
+            <Text style={themed($signUpText)}>Continue</Text>
+          </TouchableOpacity>
+          <View style={{ display: 'flex', gap: 3 }}>
+            <Text>Already have an account?</Text>
+            <TouchableOpacity style={themed($signInButton)} onPress={() => router.push('/sign-in')}>
+              <Text style={themed($signInText)}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+    </Screen>
   )
 }
+
+const $container: ThemedStyle<ViewStyle> = (theme) => ({
+  flex: 1,
+  backgroundColor: theme.colors.background,
+  alignItems: "center",
+  justifyContent: "center",
+})
+
+const $signUpButton: ThemedStyle<ViewStyle> = (theme) => ({
+  backgroundColor: theme.colors.palette.primary500,
+  paddingVertical: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.lg,
+  borderRadius: theme.spacing.sm,
+  alignItems: 'center',
+})
+
+const $signUpText: ThemedStyle<TextStyle> = (theme) => ({
+  color: theme.colors.palette.neutral100,
+  fontSize: 16,
+  fontWeight: '600',
+})
+
+const $input: ThemedStyle<TextStyle> = (theme) => ({
+  width: '80%',
+  height: 50,
+  borderWidth: 1,
+  borderColor: theme.colors.palette.neutral400,
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  marginBottom: 16,
+  color: theme.colors.text,
+  backgroundColor: theme.colors.background,
+})
+
+const $signInButton: ThemedStyle<ViewStyle> = (theme) => ({
+  backgroundColor: theme.colors.palette.primary500,
+  paddingVertical: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.lg,
+  borderRadius: theme.spacing.sm,
+  alignItems: 'center',
+})
+
+const $signInText: ThemedStyle<TextStyle> = (theme) => ({
+  color: theme.colors.palette.neutral100,
+  fontSize: 16,
+  fontWeight: '600',
+})
+
+export default observer(SignUpScreen)
