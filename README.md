@@ -1,7 +1,7 @@
 # To Do
 [X] Create PR for initial AI feature
+[x] Create auth flow with Clerk
 [] Rebase and retry SDK 53 upgrade
-[] Create auth flow with Clerk
 [] Setup database with Convex
 [] Trial Drawer for listing chat threads
 [] Create dropdown model picker just above TextInput
