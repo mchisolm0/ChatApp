@@ -1,5 +1,5 @@
 // components/CustomDrawer.tsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,11 +17,12 @@ import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { type ThemedStyle } from '@/theme';
 
-interface ChatThread {
-  id: string;
-  title: string;
-  lastMessage?: string;
-}
+// interface ChatThread {
+//   id: string;
+//   title: string;
+//   lastMessage?: string;
+// }
+import { ChatThread } from '@/data/mockData';
 
 interface User {
   id: string;
@@ -50,26 +51,29 @@ export default function CustomDrawer({
   const { themed } = useAppTheme();
   const router = useRouter();
 
-  const handleThreadPress = (threadId: string) => {
+  const handleThreadPress = useCallback((threadId: string) => {
     router.push(`/chats/${threadId}`);
     props.navigation.closeDrawer();
-  };
+  }, [router, props.navigation]);
 
-  const renderChatThread = ({ item }: { item: ChatThread }) => (
-    <TouchableOpacity
-      style={themed($threadItem)}
-      onPress={() => handleThreadPress(item.id)}
-    >
-      <Text style={themed($threadTitle)} numberOfLines={1}>
-        {item.title}
-      </Text>
-      {item.lastMessage && (
-        <Text style={themed($lastMessage)} numberOfLines={1}>
-          {item.lastMessage}
+  const renderChatThread = ({ item }: { item: ChatThread }) => {
+    const lastMessage = item.messages[item.messages.length - 1];
+    return (
+      <TouchableOpacity
+        style={themed($threadItem)}
+        onPress={() => handleThreadPress(item.id)}
+      >
+        <Text style={themed($threadTitle)} numberOfLines={1}>
+          {item.title}
         </Text>
-      )}
-    </TouchableOpacity>
-  );
+        {lastMessage && (
+          <Text style={themed($lastMessage)} numberOfLines={1}>
+            {lastMessage.content}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={themed($container)}>

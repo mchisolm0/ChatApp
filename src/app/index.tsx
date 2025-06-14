@@ -1,11 +1,14 @@
 import { generateAPIUrl } from '@/utils/utils';
 import { useChat } from '@ai-sdk/react';
 import { fetch as expoFetch } from 'expo/fetch';
-import { View, TextInput, ScrollView, Text, ViewStyle, TextStyle } from 'react-native';
 import { Screen } from '@/components';
 import { useAppTheme } from '@/utils/useAppTheme';
-import { spacing, ThemedStyle } from '@/theme';
 import { Drawer } from 'expo-router/drawer';
+import CustomDrawer from '@/components/CustomDrawer';
+
+import { useState, useEffect } from 'react';
+import { ThemedStyle } from '@/theme';
+import { ViewStyle } from 'react-native';
 
 export default function ChatScreen() {
   const { messages, error, handleInputChange, input, handleSubmit } = useChat({
@@ -16,21 +19,51 @@ export default function ChatScreen() {
 
   const { theme, themed } = useAppTheme()
 
+  const [chatThreads, setChatThreads] = useState([]);
+  const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Your data fetching logic here
+  useEffect(() => {
+    // Fetch chat threads and user data
+    // This is where you'd integrate with your backend/state management
+  }, []);
+
+  const handleLogin = () => {
+    // Navigate to login screen or show login modal
+    console.log('Login pressed');
+  };
+
+  const handleLogout = () => {
+    // Handle logout logic
+    setUser(null);
+  };
+
+  const filteredThreads = chatThreads.filter((thread) =>
+    thread.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
-      <Drawer>
+
+      <Drawer
+        drawerContent={(props) => (
+          <CustomDrawer
+            {...props}
+            chatThreads={filteredThreads}
+            user={user}
+            onLogin={handleLogin}
+            onLogout={handleLogout}
+            onSearchChange={setSearchQuery}
+            searchQuery={searchQuery}
+          />
+        )}
+      >
         <Drawer.Screen
-          name="chat" // This is the name of the page and must match the url from root
+          name="index"
           options={{
-            drawerLabel: 'New Chat',
-            title: 'New Chat',
-          }}
-        />
-        <Drawer.Screen
-          name="chats/[id]" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: 'User',
-            title: 'overview',
+            drawerLabel: 'Home',
+            title: 'Chat App',
           }}
         />
       </Drawer>
