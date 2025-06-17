@@ -1,11 +1,13 @@
 import { View } from "react-native"
-import { Slot } from "expo-router"
+import { Stack } from "expo-router"
 
 export default function RootLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Slot />
+      <Stack>
+        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+      </Stack>
     </View>
   )
 }
