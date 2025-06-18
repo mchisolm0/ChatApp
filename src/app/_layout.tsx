@@ -11,8 +11,7 @@ import { useThemeProvider } from "@/utils/useAppTheme"
 import { ClerkProvider } from "@clerk/clerk-expo"
 import "@/utils/polyfills"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { Drawer } from "expo-router/drawer"
-import CustomDrawer from "@/components/CustomDrawer"
+
 import { useStores } from "@/models"
 import { useRouter, useNavigationContainerRef } from "expo-router"
 import { isRunningInExpoGo } from "expo";
