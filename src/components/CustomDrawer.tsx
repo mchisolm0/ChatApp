@@ -2,7 +2,6 @@
 import React, { useCallback, useState } from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -17,17 +16,14 @@ import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 import { type ThemedStyle } from '@/theme';
+import { Text } from './Text';
 
-// interface ChatThread {
-//   id: string;
-//   title: string;
-//   lastMessage?: string;
-// }
 import { ChatThread } from '@/data/mockData';
 import { SignOutButton } from './SignOutButton';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { useStores } from '@/models';
 import { RefreshControl } from 'react-native-gesture-handler';
+import { Button } from './Button';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
   chatThreads: ChatThread[];
@@ -59,19 +55,19 @@ export default function CustomDrawer({
   const renderChatThread = ({ item }: { item: ChatThread }) => {
     const lastMessage = item.messages[item.messages.length - 1];
     return (
-      <TouchableOpacity
+      <Button
         style={themed($threadItem)}
         onPress={() => handleThreadPress(item.id)}
+        text={item.title}
       >
-        <Text style={themed($threadTitle)} numberOfLines={1}>
-          {item.title}
-        </Text>
         {lastMessage && (
-          <Text style={themed($lastMessage)} numberOfLines={1}>
-            {lastMessage.content}
+          <Text
+            style={themed($lastMessage)}
+            numberOfLines={1}>
+            text={lastMessage.content}
           </Text>
         )}
-      </TouchableOpacity>
+      </Button>
     );
   };
 
@@ -108,9 +104,12 @@ export default function CustomDrawer({
           </View>
         </SignedIn>
         <SignedOut>
-          <TouchableOpacity style={themed($loginButton)} onPress={() => router.push('/sign-in')}>
-            <Text style={themed($loginText)}>Sign In</Text>
-          </TouchableOpacity>
+          <Button
+            style={themed($loginButton)}
+            onPress={() => router.push('/sign-in')}
+            tx="drawer:signIn"
+          >
+          </Button>
         </SignedOut>
       </View>
     </View>

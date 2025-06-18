@@ -4,10 +4,10 @@ import { useStores } from '@/models'
 import { useAppTheme } from '@/utils/useAppTheme';
 import { ThemedStyle } from '@/theme';
 import { Link, useRouter } from 'expo-router'
-import { Button, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native'
+import { TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native'
 import React, { useEffect } from 'react'
 import * as Sentry from "@sentry/react-native";
-import { Screen } from '@/components';
+import { Screen, Button, Text } from '@/components';
 
 const PageComponent: React.FC = () => {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -53,7 +53,7 @@ const PageComponent: React.FC = () => {
   }
   return (
     <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
-      <Text>Sign in</Text>
+      <Text tx="signIn:signIn" />
       <TextInput
         autoCapitalize="none"
         value={authStore.emailAddress}
@@ -70,16 +70,19 @@ const PageComponent: React.FC = () => {
         onChangeText={(text) => authStore.setPassword(text)}
         style={themed($input)}
       />
-      <TouchableOpacity style={themed($signInButton)} onPress={onSignInPress}>
-        <Text style={themed($signInText)}>Continue</Text>
-      </TouchableOpacity>
+      <Button
+        style={themed($signInButton)}
+        onPress={onSignInPress}
+        tx="signIn:continue"
+      />
       <View style={{ display: 'flex', gap: 3 }}>
         <Text>Don't have an account?</Text>
-        <TouchableOpacity style={themed($signUpButton)} onPress={() => router.push('/sign-up')}>
-          <Text style={themed($signUpText)}>Sign Up</Text>
-        </TouchableOpacity>
+        <Button
+          style={themed($signUpButton)}
+          onPress={() => router.push('/sign-up')}
+          tx="signIn:signUp"
+        />
       </View>
-      <Button title='Try!' onPress={() => { Sentry.captureException(new Error('First error')) }} />
     </Screen>
   )
 }

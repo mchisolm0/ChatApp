@@ -15,6 +15,20 @@ const en = {
     placeholderText: "Type your message here...",
     sendButton: "Send",
   },
+  drawer: {
+    signIn: "Sign In",
+    signOut: "Sign Out",
+    createNewChat: "Create New Chat",
+    chatThread: "Chat Thread",
+  },
+  signUp: {
+    signUp: "Sign Up",
+  },
+  signIn: {
+    signIn: "Sign In",
+    continue: "Continue",
+    signUp: "Sign Up"
+  },
   errorScreen: {
     title: "Something went wrong!",
     friendlySubtitle:
