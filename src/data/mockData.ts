@@ -83,7 +83,7 @@ export const mockChatThreads = [
 // Type definitions to match Vercel AI SDK
 export interface Message {
   id: string;
-  role: "user" | "assistant" | "system";
+  role: string;
   content: string;
   createdAt: Date;
 }

@@ -34,7 +34,7 @@ export default function ChatScreen() {
       drawerContent={(props) => (
         <CustomDrawer
           {...props}
-          chatThreads={filteredThreads as any}
+          chatThreads={filteredThreads}
           onLogin={handleLogin}
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
