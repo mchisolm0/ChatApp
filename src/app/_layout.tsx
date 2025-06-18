@@ -108,9 +108,7 @@ export default Sentry.wrap(function Root() {
     <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string} tokenCache={tokenCache}>
       <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
         <KeyboardProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <RootLayout />
-          </GestureHandlerRootView>
+          <RootLayout />
         </KeyboardProvider>
       </ThemeProvider>
     </ClerkProvider>
