@@ -26,25 +26,31 @@ const PageComponent: React.FC = () => {
       authStore.setUserData(email, username)
     }
   }, [user])
-
   const onSignInPress = async () => {
-    if (!isLoaded) return
+    if (!isLoaded || authStore.isLoading) return
+    authStore.setProp('isLoading', true)
+    authStore.setProp('error', undefined)
+
     try {
       const signInAttempt = await signIn.create({
         identifier: authStore.emailAddress,
         password: authStore.password,
       })
+
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId })
         router.replace("/")
+      } else {
+        // e.g. needs second factor or email verification
+        authStore.setProp('pendingVerification', true)
       }
     } catch (error: any) {
       console.error('Sign in error:', error)
       authStore.setProp('error', error?.errors?.[0]?.message || error?.message || 'Unknown error')
-      // Handle error (you might want to show this to the user)
+    } finally {
+      authStore.setProp('isLoading', false)
     }
   }
-
   return (
     <Screen safeAreaEdges={["top", "bottom"]} contentContainerStyle={themed($container)}>
       <Text>Sign in</Text>
