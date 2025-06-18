@@ -44,7 +44,11 @@ Sentry.init({
   // Configure Session Replay
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
-  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+  integrations: [
+    navigationIntegration,
+    Sentry.mobileReplayIntegration(),
+    Sentry.feedbackIntegration(),
+  ],
 
   // uncomment the line below to enable Spotlight (https://spotlightjs.com)
   // spotlight: __DEV__,
@@ -105,9 +109,9 @@ export default Sentry.wrap(function Root() {
     <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string} tokenCache={tokenCache}>
       <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
         <KeyboardProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootLayout />
-        </GestureHandlerRootView>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <RootLayout />
+          </GestureHandlerRootView>
         </KeyboardProvider>
       </ThemeProvider>
     </ClerkProvider>
