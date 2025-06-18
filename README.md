@@ -1,19 +1,10 @@
-# To Do
-[] Create PR for initial AI feature
-[] Rebase and retry SDK 53 upgrade
-[] Create auth flow with Clerk
-[] Setup database with Convex
-[] Trial Drawer for listing chat threads
-[] Create dropdown model picker just above TextInput
+# Welcome to a T3 Clone
 
-# Welcome to your new ignited app!
+This is based on the boilerplate that [Infinite Red](https://infinite.red), but
+is *far* from complete. When complete, it will have the web app, and native apps.
 
-> The latest and greatest boilerplate for Infinite Red opinions
-
-This is based on the boilerplate that [Infinite Red](https://infinite.red) uses as a way to test bleeding-edge changes to our React Native stack.
-
-- [Quick start documentation](https://github.com/infinitered/ignite/blob/master/docs/boilerplate/Boilerplate.md)
-- [Full documentation](https://github.com/infinitered/ignite/blob/master/docs/README.md)
+- [Quick start documentation for Ignite](https://github.com/infinitered/ignite/blob/master/docs/boilerplate/Boilerplate.md)
+- [Full documentation for Ignite](https://github.com/infinitered/ignite/blob/master/docs/README.md)
 
 ## Getting Started
 
