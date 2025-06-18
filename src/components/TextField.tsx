@@ -112,7 +112,6 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
     labelTx,
     label,
     labelTxOptions,
-    onSubmitEditing,
     placeholderTx,
     placeholder,
     placeholderTxOptions,
