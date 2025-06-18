@@ -1,5 +1,5 @@
 // components/CustomDrawer.tsx
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import { ChatThread } from '@/data/mockData';
 import { SignOutButton } from './SignOutButton';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { useStores } from '@/models';
+import { RefreshControl } from 'react-native-gesture-handler';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
   chatThreads: ChatThread[];
@@ -46,6 +47,9 @@ export default function CustomDrawer({
   const containerInsets = useSafeAreaInsetsStyle(['top', 'bottom']);
   const router = useRouter();
   const { authStore } = useStores();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => { };
 
   const handleThreadPress = useCallback((threadId: string) => {
     router.push({ pathname: '/[threadId]', params: { threadId } });
@@ -94,7 +98,9 @@ export default function CustomDrawer({
           renderItem={renderChatThread}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          scrollEnabled={false}
+          scrollEnabled
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          contentInsetAdjustmentBehavior='automatic'
         />
       </DrawerContentScrollView>
 
