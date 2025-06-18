@@ -44,10 +44,10 @@ export default function CustomDrawer({
   ...props
 }: CustomDrawerProps) {
   const { themed } = useAppTheme();
-  const containerInsets = useSafeAreaInsetsStyle(['top', 'bottom']);
   const router = useRouter();
   const { authStore } = useStores();
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsetsStyle(["top", "bottom"]);
 
   const handleRefresh = async () => { };
 
@@ -76,35 +76,27 @@ export default function CustomDrawer({
   };
 
   return (
-    <View style={[themed($container), containerInsets]}>
-      {/* Search Section */}
+    <View style={[themed($container), insets]}>
       <View style={themed($searchContainer)}>
         <TextInput
           style={themed($searchInput)}
-          placeholder="Search chats..."
+          placeholder="Search chats…"
           value={searchQuery}
           onChangeText={onSearchChange}
           placeholderTextColor="#666"
         />
       </View>
-
-      {/* Chat Threads List */}
-      <DrawerContentScrollView
+      <FlatList
+        data={chatThreads}
+        keyExtractor={(t) => t.id}
+        renderItem={renderChatThread}
+        showsVerticalScrollIndicator={true}
+        scrollEnabled
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        contentInsetAdjustmentBehavior='automatic'
+        contentContainerStyle={themed($container)}
         {...props}
-        contentContainerStyle={themed($scrollContent)}
-      >
-        <FlatList
-          data={chatThreads}
-          renderItem={renderChatThread}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          scrollEnabled
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-          contentInsetAdjustmentBehavior='automatic'
-        />
-      </DrawerContentScrollView>
-
-      {/* User Section */}
+      />
       <View style={themed($userSection)}>
         <SignedIn>
           <View style={themed($userInfo)}>
