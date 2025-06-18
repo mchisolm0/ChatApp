@@ -122,7 +122,8 @@ export function ChatInterface({ threadId, apiEndpoint = '/api/chat' }: ChatInter
         <TextField
           placeholderTx='chatScreen:placeholderText'
           value={input}
-          multiline
+          // multiline removed to allow physical Enter to submit
+          // If you need multiline input, you can set multiline but also blurOnSubmit={true}
           onChange={e =>
             handleInputChange({
               ...e,
@@ -132,6 +133,12 @@ export function ChatInterface({ threadId, apiEndpoint = '/api/chat' }: ChatInter
               },
             } as unknown as React.ChangeEvent<HTMLInputElement>)
           }
+          blurOnSubmit
+          returnKeyType="send"
+          onSubmitEditing={e => {
+            e.preventDefault();
+            handleSubmit(e);
+          }}
           autoFocus={true}
           RightAccessory={useCallback(
             (props: TextFieldAccessoryProps) => (
