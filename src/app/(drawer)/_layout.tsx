@@ -42,7 +42,7 @@ export default function ChatScreen() {
       )}
     >
       <Drawer.Screen
-        name="/"
+        name="index"
         options={{
           drawerLabel: "Create New Chat",
           title: "Create New Chat",
