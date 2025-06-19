@@ -10,6 +10,9 @@ import { initI18n } from "@/i18n"
 import { loadDateFnsLocale } from "@/utils/formatDate"
 import { useThemeProvider } from "@/utils/useAppTheme"
 import "@/utils/polyfills"
+import { ClerkProvider } from "@clerk/clerk-expo"
+import { tokenCache } from "@clerk/clerk-expo/token-cache"
+import { Platform } from "react-native"
 
 SplashScreen.preventAutoHideAsync()
 
@@ -70,11 +73,17 @@ function Root() {
   })
 
   return (
-    <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
-      <KeyboardProvider>
-        <Slot />
-      </KeyboardProvider>
-    </ThemeProvider>
+    <ClerkProvider
+      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      token={tokenCache}
+      standardBrowser={Platform.OS === "web" ? true : false}
+    >
+      <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
+        <KeyboardProvider>
+          <Slot />
+        </KeyboardProvider>
+      </ThemeProvider>
+    </ClerkProvider>
   )
 }
 
