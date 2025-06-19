@@ -34,6 +34,10 @@ module.exports = ({ config }: ConfigContext): Partial<ExpoConfig> => {
         ],
       },
     },
-    plugins: [...existingPlugins, require("./plugins/withSplashScreen").withSplashScreen],
+    plugins: [
+      ...existingPlugins,
+      "expo-secure-store",
+      require("./plugins/withSplashScreen").withSplashScreen
+    ],
   }
 }
