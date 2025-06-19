@@ -23,6 +23,7 @@ export interface ChatMessageSnapshotOut extends SnapshotOut<typeof ChatMessageMo
 export const ChatThreadModel = types
   .model("ChatThread", {
     id: types.identifier,
+    userId: types.maybeNull(types.string),
     title: types.string,
     createdAt: types.Date,
     updatedAt: types.Date,
@@ -66,6 +67,14 @@ export const ChatStoreModel = types
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
       )
     },
+    /**
+     * Returns threads for the current user (or anonymous when no user).
+     */
+    threadsForUser(currentUserId?: string | null) {
+      return Array.from(self.threads.values())
+        .filter((t) => (currentUserId ? t.userId === currentUserId : t.userId == null))
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    },
   }))
   .actions((self) => ({
     addThread(thread: ChatThreadSnapshotIn) {
@@ -73,12 +82,17 @@ export const ChatStoreModel = types
         self.threads.set(thread.id, thread as ChatThreadSnapshotIn)
       }
     },
-    addMessageToThread(threadId: string, message: ChatMessageSnapshotIn, title?: string) {
+    addMessageToThread(
+      threadId: string,
+      message: ChatMessageSnapshotIn,
+      options?: { title?: string; userId?: string | null },
+    ) {
       // ensure thread exists
       if (!self.threads.has(threadId)) {
         this.addThread({
           id: threadId,
-          title: title ?? "New chat",
+          userId: options?.userId ?? null,
+          title: options?.title ?? "New chat",
           createdAt: new Date(),
           updatedAt: new Date(),
           messages: [],
