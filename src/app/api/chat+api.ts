@@ -1,6 +1,6 @@
 import { google } from '@ai-sdk/google';
 import { streamText } from 'ai';
-import { z } from "zod"
+import { z } from "zod";
 
 export async function POST(req: Request) {
   let body: unknown
