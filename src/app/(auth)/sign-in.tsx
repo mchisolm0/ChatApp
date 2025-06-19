@@ -1,9 +1,12 @@
 import { useSignIn } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Screen } from '@/components'
 import React from 'react'
+import { useAppTheme } from '../../utils/useAppTheme'
+import * as styles from '../../styles/auth'
 
-export default function Page() {
+export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn()
   const router = useRouter()
 
@@ -38,30 +41,37 @@ export default function Page() {
     }
   }
 
+  const { themed } = useAppTheme()
+
   return (
-    <View>
-      <Text>Sign in</Text>
+    <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed(styles.$container)}>
+      <Text style={themed(styles.$title)}>Sign in</Text>
       <TextInput
         autoCapitalize="none"
         value={emailAddress}
         placeholder="Enter email"
-        onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
+        style={themed(styles.$input)}
+        onChangeText={setEmailAddress}
       />
       <TextInput
         value={password}
         placeholder="Enter password"
-        secureTextEntry={true}
-        onChangeText={(password) => setPassword(password)}
+        secureTextEntry
+        style={themed(styles.$input)}
+        onChangeText={setPassword}
       />
-      <TouchableOpacity onPress={onSignInPress}>
-        <Text>Continue</Text>
+      <TouchableOpacity
+        style={themed(styles.$button)}
+        onPress={onSignInPress}
+      >
+        <Text style={themed(styles.$buttonText)}>Sign in</Text>
       </TouchableOpacity>
-      <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-        <Text>Don't have an account?</Text>
-        <Link href="/sign-up">
-          <Text>Sign up</Text>
+      <View style={themed(styles.$footer)}>
+        <Text style={themed(styles.$footerText)}>Don't have an account?</Text>
+        <Link href="/sign-up" asChild>
+          <Text style={themed(styles.$link)}>Sign up</Text>
         </Link>
       </View>
-    </View>
+    </Screen>
   )
 }

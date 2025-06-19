@@ -1,7 +1,10 @@
 import * as React from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Screen } from '@/components'
 import { useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
+import { useAppTheme } from '../../utils/useAppTheme'
+import * as styles from '../../styles/auth'
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()
@@ -65,48 +68,51 @@ export default function SignUpScreen() {
     }
   }
 
+  const { themed } = useAppTheme()
+
   if (pendingVerification) {
     return (
-      <>
-        <Text>Verify your email</Text>
+      <View style={themed(styles.$container)}>
+        <Text style={themed(styles.$title)}>Verify your email</Text>
         <TextInput
           value={code}
           placeholder="Enter your verification code"
+          style={themed(styles.$input)}
           onChangeText={(code) => setCode(code)}
         />
-        <TouchableOpacity onPress={onVerifyPress}>
-          <Text>Verify</Text>
+        <TouchableOpacity style={themed(styles.$button)} onPress={onVerifyPress}>
+          <Text style={themed(styles.$buttonText)}>Verify</Text>
         </TouchableOpacity>
-      </>
+      </View>
     )
   }
 
   return (
-    <View>
-      <>
-        <Text>Sign up</Text>
-        <TextInput
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="Enter email"
-          onChangeText={(email) => setEmailAddress(email)}
-        />
-        <TextInput
-          value={password}
-          placeholder="Enter password"
-          secureTextEntry={true}
-          onChangeText={(password) => setPassword(password)}
-        />
-        <TouchableOpacity onPress={onSignUpPress}>
-          <Text>Continue</Text>
-        </TouchableOpacity>
-        <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-          <Text>Already have an account?</Text>
-          <Link href="/sign-in">
-            <Text>Sign in</Text>
-          </Link>
-        </View>
-      </>
-    </View>
+    <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed(styles.$container)}>
+      <Text style={themed(styles.$title)}>Sign up</Text>
+      <TextInput
+        autoCapitalize="none"
+        value={emailAddress}
+        placeholder="Enter email"
+        style={themed(styles.$input)}
+        onChangeText={(email) => setEmailAddress(email)}
+      />
+      <TextInput
+        value={password}
+        placeholder="Enter password"
+        secureTextEntry={true}
+        style={themed(styles.$input)}
+        onChangeText={(password) => setPassword(password)}
+      />
+      <TouchableOpacity style={themed(styles.$button)} onPress={onSignUpPress}>
+        <Text style={themed(styles.$buttonText)}>Continue</Text>
+      </TouchableOpacity>
+      <View style={themed(styles.$footer)}>
+        <Text style={themed(styles.$footerText)}>Already have an account?</Text>
+        <Link href="/sign-in">
+          <Text style={themed(styles.$link)}>Sign in</Text>
+        </Link>
+      </View>
+    </Screen>
   )
 }
