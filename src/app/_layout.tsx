@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Slot, SplashScreen } from "expo-router"
 import { KeyboardProvider } from "react-native-keyboard-controller"
+import * as Sentry from "@sentry/react-native"
 
 import { useInitialRootStore } from "@/models"
 import { useFonts } from "@expo-google-fonts/space-grotesk"
@@ -21,7 +22,7 @@ if (__DEV__) {
 
 export { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary"
 
-export default function Root() {
+function Root() {
   // Wait for stores to load and render our layout inside of it so we have access
   // to auth info etc
   const { rehydrated } = useInitialRootStore()
@@ -52,6 +53,22 @@ export default function Root() {
     return null
   }
 
+  Sentry.init({
+    dsn: "https://fb0911d35ee81e74104af5adbfda47d6@o4507118738669568.ingest.us.sentry.io/4509505874427905",
+
+    // Adds more context data to events (IP address, cookies, user, etc.)
+    // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+    sendDefaultPii: true,
+
+    // Configure Session Replay
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1,
+    integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+
+    // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+    // spotlight: __DEV__,
+  })
+
   return (
     <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
       <KeyboardProvider>
@@ -60,3 +77,5 @@ export default function Root() {
     </ThemeProvider>
   )
 }
+
+export default Sentry.wrap(Root)
