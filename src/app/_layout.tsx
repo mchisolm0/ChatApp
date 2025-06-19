@@ -25,6 +25,22 @@ if (__DEV__) {
 
 export { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary"
 
+Sentry.init({
+  dsn: "https://fb0911d35ee81e74104af5adbfda47d6@o4507118738669568.ingest.us.sentry.io/4509505874427905",
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Configure Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+})
+
 function Root() {
   // Wait for stores to load and render our layout inside of it so we have access
   // to auth info etc
@@ -56,26 +72,11 @@ function Root() {
     return null
   }
 
-  Sentry.init({
-    dsn: "https://fb0911d35ee81e74104af5adbfda47d6@o4507118738669568.ingest.us.sentry.io/4509505874427905",
-
-    // Adds more context data to events (IP address, cookies, user, etc.)
-    // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
-    sendDefaultPii: true,
-
-    // Configure Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1,
-    integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
-
-    // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-    // spotlight: __DEV__,
-  })
 
   return (
     <ClerkProvider
       publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      token={tokenCache}
+      tokenCache={tokenCache}
       standardBrowser={Platform.OS === "web" ? true : false}
     >
       <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
