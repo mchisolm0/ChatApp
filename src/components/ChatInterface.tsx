@@ -1,4 +1,4 @@
-import { generateAPIUrl } from '@/utils/utils';
+import { generateAPIUrl } from '@/utils/generateAPIRoutes';
 import { useChat } from '@ai-sdk/react';
 import { fetch as expoFetch } from 'expo/fetch';
 import { View, TextInput, ScrollView, Text, ViewStyle, TextStyle, TouchableOpacity, Modal } from 'react-native';
