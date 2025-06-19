@@ -47,7 +47,15 @@
           "backgroundColor": "#191015"
         }
       ],
-      "expo-router"
+      "expo-router",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "chat-app",
+          "organization": "matthew-chisolm"
+        }
+      ]
     ],
     "experiments": {
       "tsconfigPaths": true,
