@@ -1,11 +1,27 @@
 import { generateAPIUrl } from '@/utils/generateAPIRoutes';
 import { useChat } from '@ai-sdk/react';
 import { fetch as expoFetch } from 'expo/fetch';
-import { View, TextInput, ScrollView, Text, ViewStyle, TextStyle, TouchableOpacity, Modal } from 'react-native';
+import { View, TextInput, ScrollView, Text, TouchableOpacity, Modal } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
-import { spacing, ThemedStyle } from '@/theme';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { $modalOverlay, $errorContainer, $errorText } from '@/styles/common';
+import {
+  $chatContainer,
+  $chatTopContainer,
+  $modelSelector,
+  $modelPicker,
+  $messageContainer,
+  $roleText,
+  $messageText,
+  $bottomContainer,
+  $pickerText,
+  $pickerModal,
+  $pickerOption,
+  $pickerOptionText,
+  $chatInput,
+  $messagesScroll,
+} from '@/styles/chat';
 
 interface ChatInterfaceProps {
   threadId?: string;
@@ -48,11 +64,11 @@ export const ChatInterface = observer(function ChatInterface({ threadId = 'defau
   const { theme, themed } = useAppTheme();
 
   return (
-    <View style={themed($container)}>
-      <View style={themed($topContainer)}>
+    <View style={themed($chatContainer)}>
+      <View style={themed($chatTopContainer)}>
         <View style={themed($modelSelector)}>
           <TouchableOpacity
-            style={themed($picker)}
+            style={themed($modelPicker)}
             onPress={() => setIsModelPickerVisible(true)}
           >
             <Text style={themed($pickerText)}>{selectedModel}</Text>
@@ -85,7 +101,7 @@ export const ChatInterface = observer(function ChatInterface({ threadId = 'defau
             </TouchableOpacity>
           </Modal>
         </View>
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView style={themed($messagesScroll)}>
           {messages.map(m => (
             <View key={m.id} style={themed($messageContainer)}>
               <View>
@@ -103,7 +119,7 @@ export const ChatInterface = observer(function ChatInterface({ threadId = 'defau
           </View>
         )}
         <TextInput
-          style={themed($input)}
+          style={themed($chatInput)}
           placeholder="Ask me anything..."
           value={input}
           onChange={e =>
@@ -126,99 +142,4 @@ export const ChatInterface = observer(function ChatInterface({ threadId = 'defau
   );
 });
 
-const $container: ThemedStyle<ViewStyle> = ({ colors }) => ({
-  flex: 1,
-  backgroundColor: colors.background,
-});
 
-const $topContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flex: 9,
-  display: 'flex',
-  flexDirection: 'column',
-  paddingHorizontal: spacing.lg,
-});
-
-const $modelSelector: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.palette.neutral200,
-  borderRadius: spacing.xs,
-  marginVertical: spacing.sm,
-});
-
-const $picker: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.transparent,
-});
-
-const $messageContainer: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  marginVertical: spacing.xs,
-  padding: spacing.sm,
-  backgroundColor: colors.palette.neutral100,
-  borderRadius: spacing.xs,
-});
-
-const $roleText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  fontWeight: '700',
-  color: colors.text,
-  marginBottom: spacing.xxs,
-});
-
-const $messageText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.text,
-});
-
-const $bottomContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flex: 1,
-});
-
-const $errorContainer: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  position: 'absolute',
-  bottom: '100%',
-  left: spacing.md,
-  right: spacing.md,
-  backgroundColor: colors.error,
-  padding: spacing.xs,
-  borderRadius: spacing.xs,
-  marginBottom: spacing.xs,
-});
-
-const $errorText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.background,
-  textAlign: 'center',
-});
-
-const $pickerText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.text,
-  fontSize: 16,
-});
-
-const $modalOverlay: ThemedStyle<ViewStyle> = ({ colors }) => ({
-  flex: 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  justifyContent: 'center',
-  alignItems: 'center',
-});
-
-const $pickerModal: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.background,
-  borderRadius: 8,
-  padding: spacing.sm,
-  width: '80%',
-  maxHeight: '60%',
-});
-
-const $pickerOption: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  padding: spacing.sm,
-  borderBottomWidth: 1,
-  borderBottomColor: colors.palette.neutral200,
-});
-
-const $pickerOptionText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.text,
-  fontSize: 16,
-});
-
-const $input: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  backgroundColor: 'white',
-  margin: spacing.md,
-  padding: spacing.md,
-  borderRadius: spacing.xs,
-});

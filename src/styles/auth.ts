@@ -1,73 +1,28 @@
-import { TextStyle, ViewStyle } from 'react-native'
-import { ThemedStyle } from '../theme'
+import {
+  $pageContainer,
+  $formTitle,
+  $formInput,
+  $formButton,
+  $formButtonText,
+  $formFooter,
+  $formFooterText,
+  $formLink,
+} from './common'
 
-export const $container: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flex: 1,
-  padding: spacing.lg,
-  justifyContent: 'center',
-})
+import {
+  $authButton as $authSelector,
+  $authButtonText as $authText,
+} from './chat'
 
-export const $title: ThemedStyle<TextStyle> = ({ colors }) => ({
-  fontSize: 24,
-  fontWeight: 'bold',
-  color: colors.text,
-  marginBottom: 24,
-  textAlign: 'center',
-})
+// Re-export common styles with auth-specific names for backwards compatibility
+export const $container = $pageContainer
+export const $title = $formTitle
+export const $input = $formInput
+export const $button = $formButton
+export const $buttonText = $formButtonText
+export const $footer = $formFooter
+export const $footerText = $formFooterText
+export const $link = $formLink
 
-export const $input: ThemedStyle<TextStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.palette.neutral200,
-  borderRadius: spacing.xs,
-  padding: spacing.md,
-  marginVertical: spacing.xs,
-  color: colors.text,
-  fontSize: 16,
-  fontWeight: '600',
-})
-
-export const $button: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.palette.primary500,
-  borderRadius: spacing.xs,
-  padding: spacing.sm,
-  marginVertical: spacing.md,
-  alignItems: 'center',
-})
-
-export const $buttonText: ThemedStyle<TextStyle> = () => ({
-  color: 'white',
-  fontSize: 16,
-  fontWeight: '600',
-})
-
-export const $footer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flexDirection: 'row',
-  justifyContent: 'center',
-  gap: spacing.xs,
-  marginTop: spacing.sm,
-})
-
-export const $footerText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.text,
-  fontSize: 14,
-})
-
-export const $link: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.palette.primary500,
-  fontSize: 14,
-  fontWeight: '600',
-})
-
-export const $authSelector: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.palette.neutral200,
-  borderRadius: spacing.xs,
-  padding: spacing.sm,
-  marginVertical: spacing.xs,
-  alignItems: 'center',
-});
-
-export const $authText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.text,
-  fontSize: 16,
-  fontWeight: '600',
-});
-
+// Re-export auth button styles for backwards compatibility
+export { $authSelector, $authText }

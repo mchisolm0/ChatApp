@@ -1,21 +1,18 @@
 import { ChatInterface } from '@/components/ChatInterface';
 import { Screen } from '@/components';
 import { useAppTheme } from '@/utils/useAppTheme';
-import { ThemedStyle } from '@/theme';
-import { TextStyle, ViewStyle } from 'react-native';
-import { TouchableOpacity } from 'react-native';
-import { Text } from 'react-native';
+import { TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as styles from '@/styles/auth'
+import { $chatScreenContainer, $chatAuthButton, $chatAuthButtonText } from '@/styles/chat';
 
 export default function ChatScreen() {
   const { themed } = useAppTheme()
   const router = useRouter()
 
   return (
-    <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($container)} >
+    <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($chatScreenContainer)} >
       <TouchableOpacity
-        style={themed($authSelector)}
+        style={themed($chatAuthButton)}
         onPress={() => {
           try {
             router.push('/sign-in')
@@ -24,36 +21,19 @@ export default function ChatScreen() {
           }
         }}
       >
-        <Text style={themed($authText)}>Sign In</Text>
+        <Text style={themed($chatAuthButtonText)}>Sign In</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={themed($authSelector)}
+        style={themed($chatAuthButton)}
         onPress={() => {
           router.push('/sign-up')
         }}
       >
-        <Text style={themed($authText)}>Sign Up</Text>
+        <Text style={themed($chatAuthButtonText)}>Sign Up</Text>
       </TouchableOpacity>
       <ChatInterface />
     </Screen>
   );
 }
 
-const $container: ThemedStyle<ViewStyle> = ({ colors }) => ({
-  flex: 1,
-  backgroundColor: colors.background,
-});
 
-const $authSelector: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  backgroundColor: colors.palette.neutral200,
-  borderRadius: spacing.xs,
-  padding: spacing.sm,
-  marginVertical: spacing.xs,
-  alignItems: 'center',
-});
-
-const $authText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  color: colors.text,
-  fontSize: 16,
-  fontWeight: '600',
-});
