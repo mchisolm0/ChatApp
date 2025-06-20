@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { Slot, SplashScreen } from "expo-router"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import * as Sentry from "@sentry/react-native"
@@ -15,6 +16,10 @@ import { tokenCache } from "@clerk/clerk-expo/token-cache"
 import { Platform } from "react-native"
 
 SplashScreen.preventAutoHideAsync()
+
+const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+  unsavedChangesWarning: false,
+});
 
 if (__DEV__) {
   // Load Reactotron configuration in development. We don't want to
@@ -74,17 +79,19 @@ function Root() {
 
 
   return (
-    <ClerkProvider
-      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      tokenCache={tokenCache}
-      standardBrowser={Platform.OS === "web" ? true : false}
-    >
-      <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
-        <KeyboardProvider>
-          <Slot />
-        </KeyboardProvider>
-      </ThemeProvider>
-    </ClerkProvider>
+    <ConvexProvider client={convex}>
+      <ClerkProvider
+        publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        tokenCache={tokenCache}
+        standardBrowser={Platform.OS === "web" ? true : false}
+      >
+        <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
+          <KeyboardProvider>
+            <Slot />
+          </KeyboardProvider>
+        </ThemeProvider>
+      </ClerkProvider>
+    </ConvexProvider>
   )
 }
 
