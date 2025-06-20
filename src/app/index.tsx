@@ -5,7 +5,8 @@ import { ThemedStyle } from '@/theme'
 import { View, ViewStyle, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router'
 import * as styles from '@/styles/auth'
-import { SignedIn, SignedOut, useClerk } from '@clerk/clerk-expo'
+import { useClerk } from '@clerk/clerk-expo'
+import { Authenticated, Unauthenticated, AuthLoading } from 'convex/react';
 
 function SignInButtons() {
   const { themed } = useAppTheme()
@@ -50,12 +51,15 @@ export default function ChatScreen() {
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($container)}>
       <View style={themed($authContainer)}>
-        <SignedIn>
+        <Authenticated>
           <SignOutButton />
-        </SignedIn>
-        <SignedOut>
+        </Authenticated>
+        <Unauthenticated>
           <SignInButtons />
-        </SignedOut>
+        </Unauthenticated>
+        <AuthLoading>
+          <Text>Loading...</Text>
+        </AuthLoading>
       </View>
       <ChatInterface />
     </Screen>

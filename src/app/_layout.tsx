@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import React, { useEffect, useState } from "react"
+import { ConvexReactClient } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Slot, SplashScreen } from "expo-router"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import * as Sentry from "@sentry/react-native"
@@ -11,7 +12,7 @@ import { initI18n } from "@/i18n"
 import { loadDateFnsLocale } from "@/utils/formatDate"
 import { useThemeProvider } from "@/utils/useAppTheme"
 import "@/utils/polyfills"
-import { ClerkProvider } from "@clerk/clerk-expo"
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo"
 import { tokenCache } from "@clerk/clerk-expo/token-cache"
 import { Platform } from "react-native"
 
@@ -79,19 +80,19 @@ function Root() {
 
 
   return (
-    <ConvexProvider client={convex}>
       <ClerkProvider
         publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
         tokenCache={tokenCache}
         standardBrowser={Platform.OS === "web" ? true : false}
-      >
+    >
+      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
           <KeyboardProvider>
             <Slot />
           </KeyboardProvider>
         </ThemeProvider>
+      </ConvexProviderWithClerk>
       </ClerkProvider>
-    </ConvexProvider>
   )
 }
 
