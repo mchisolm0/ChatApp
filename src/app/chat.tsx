@@ -14,28 +14,26 @@ export default function ChatScreen() {
 
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($container)} >
-        <TouchableOpacity
-          style={themed($authSelector)}
-          onPress={() => {
-            try {
+      <TouchableOpacity
+        style={themed($authSelector)}
+        onPress={() => {
+          try {
             router.push('/sign-in')
-            console.log("Sign In")
           } catch (error) {
             console.error("Navigate error" + error)
-            }
-          }}
-        >
-          <Text style={themed($authText)}>Sign In</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={themed($authSelector)}
-          onPress={() => {
-            router.push('/sign-up')
-            console.log("Sign Up")
-          }}
-        >
-          <Text style={themed($authText)}>Sign Up</Text>
-        </TouchableOpacity>
+          }
+        }}
+      >
+        <Text style={themed($authText)}>Sign In</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={themed($authSelector)}
+        onPress={() => {
+          router.push('/sign-up')
+        }}
+      >
+        <Text style={themed($authText)}>Sign Up</Text>
+      </TouchableOpacity>
       <ChatInterface />
     </Screen>
   );
