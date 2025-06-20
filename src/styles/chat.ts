@@ -93,7 +93,7 @@ export const $messageText: ThemedStyle<TextStyle> = (theme) => ({
 export const $bottomContainer: ThemedStyle<ViewStyle> = (theme) => ({
   //flex: 1,
   paddingHorizontal: theme.spacing.md,
-  paddingBottom: theme.spacing.lg,
+  paddingBottom: theme.spacing.xs,
 });
 
 export const $pickerText: ThemedStyle<TextStyle> = (theme) => ({

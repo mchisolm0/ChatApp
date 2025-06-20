@@ -15,13 +15,13 @@ function SignInButtons() {
     <View style={themed($authButtonsContainer)}>
       <TouchableOpacity
         style={themed($authButton)}
-        onPress={() => router.push('/sign-in')}
+        onPress={() => router.navigate('/sign-in')}
       >
         <Text style={themed($authButtonText)}>Sign In</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={themed($authButton)}
-        onPress={() => router.push('/sign-up')}
+        onPress={() => router.navigate('/sign-up')}
       >
         <Text style={themed($authButtonText)}>Sign Up</Text>
       </TouchableOpacity>

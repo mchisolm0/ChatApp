@@ -4,8 +4,8 @@ import { ThemedStyle } from '@/theme';
 // Layout styles
 export const $pageContainer: ThemedStyle<ViewStyle> = (theme) => ({
   flex: 1,
-  backgroundColor: theme.colors.background,
-  padding: theme.spacing.md,
+  backgroundColor: "red", //  theme.colors.background,
+  paddingHorizontal: theme.spacing.md,
   justifyContent: 'center',
 });
 
