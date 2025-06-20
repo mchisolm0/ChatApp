@@ -14,7 +14,7 @@ export default defineSchema({
     id: v.string(),
     title: v.string(),
     user_id: v.string(),
-  }),
+  }).index("by_user_id", ["user_id"]),
   users: defineTable({
     avatar_url: v.string(),
     email: v.string(),
