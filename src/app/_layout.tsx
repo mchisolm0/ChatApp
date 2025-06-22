@@ -80,10 +80,10 @@ function Root() {
 
 
   return (
-      <ClerkProvider
-        publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        tokenCache={tokenCache}
-        standardBrowser={Platform.OS === "web" ? true : false}
+    <ClerkProvider
+      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      tokenCache={tokenCache}
+      standardBrowser={Platform.OS === "web" ? true : false}
     >
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         <ThemeProvider value={{ themeScheme, setThemeContextOverride }}>
@@ -92,7 +92,7 @@ function Root() {
           </KeyboardProvider>
         </ThemeProvider>
       </ConvexProviderWithClerk>
-      </ClerkProvider>
+    </ClerkProvider>
   )
 }
 
