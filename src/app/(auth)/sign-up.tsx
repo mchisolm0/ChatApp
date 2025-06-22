@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { Screen } from '@/components'
 import { useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
@@ -73,6 +74,7 @@ export default function SignUpScreen() {
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed(styles.$container)}>
       <Text style={themed(styles.$title)}>Sign up</Text>
+      <KeyboardAvoidingView>
       <TextInput
         autoCapitalize="none"
         value={emailAddress}
@@ -96,6 +98,7 @@ export default function SignUpScreen() {
           <Text style={themed(styles.$link)}>Sign in</Text>
         </Link>
       </View>
+      </KeyboardAvoidingView>
     </Screen>
   )
 }

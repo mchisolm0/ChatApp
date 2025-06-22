@@ -5,6 +5,7 @@ import { Screen } from '@/components'
 import React from 'react'
 import { useAppTheme } from '../../utils/useAppTheme'
 import * as styles from '../../styles/auth'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -38,6 +39,7 @@ export default function SignInScreen() {
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed(styles.$container)}>
       <Text style={themed(styles.$title)}>Sign in</Text>
+      <KeyboardAvoidingView>
       <TextInput
         autoCapitalize="none"
         value={emailAddress}
@@ -64,6 +66,7 @@ export default function SignInScreen() {
           <Text style={themed(styles.$link)}>Sign up</Text>
         </Link>
       </View>
+      </KeyboardAvoidingView>
     </Screen>
   )
 }
