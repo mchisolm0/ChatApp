@@ -2,7 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  messeges: defineTable({
+  messages: defineTable({
     content: v.string(),
     error: v.union(v.null(), v.string()),
     id: v.string(),

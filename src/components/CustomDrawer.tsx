@@ -8,22 +8,19 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import {
-  DrawerContentScrollView,
-  DrawerContentComponentProps,
-} from '@react-navigation/drawer';
+import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 import { type ThemedStyle } from '@/theme';
 import { Text } from './Text';
 
-import { SignedIn, SignedOut, useClerk } from '@clerk/clerk-expo';
-import { useStores } from '@/models';
+import { useClerk } from '@clerk/clerk-expo';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { Button } from '@/components/Button';
 import { ChatThread } from '@/models/ChatStore';
 import { $authButton, $authButtonText } from '@/styles/chat';
+import { Authenticated, Unauthenticated } from 'convex/react';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
   chatThreads: ChatThread[];
@@ -55,7 +52,7 @@ export default function CustomDrawer({
 }: CustomDrawerProps) {
   const { themed } = useAppTheme();
   const router = useRouter();
-  const { authStore } = useStores();
+  const { user } = useClerk()
   const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsetsStyle(["top", "bottom"]);
 
@@ -108,23 +105,23 @@ export default function CustomDrawer({
         {...props}
       />
       <View style={themed($userSection)}>
-        <SignedIn>
+        <Authenticated>
           <View style={themed($userInfo)}>
             <View style={themed($user)}>
-              <Text style={themed($userName)}>{authStore.username}</Text>
-              <Text style={themed($userEmail)}>{authStore.emailAddress}</Text>
+              <Text style={themed($userName)}>{user?.fullName}</Text>
+              <Text style={themed($userEmail)}>{user?.emailAddresses[0].emailAddress}</Text>
             </View>
             <SignOutButton />
           </View>
-        </SignedIn>
-        <SignedOut>
+        </Authenticated>
+        <Unauthenticated>
           <Button
             style={themed($loginButton)}
             onPress={() => router.push('/sign-in')}
             tx="drawer:signIn"
           >
           </Button>
-        </SignedOut>
+        </Unauthenticated>
       </View>
     </View>
   );
