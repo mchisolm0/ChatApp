@@ -2,7 +2,6 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { streamText } from 'ai';
 import { z } from "zod";
 
-// Define the free models that can be picked by the client UI
 export const FREE_MODELS = [
   'google/gemma-3-4b-it:free',
   'google/gemma-3-12b-it:free',
@@ -15,9 +14,6 @@ export const FREE_MODELS = [
   'google/gemini-2.0-flash-001',
 ] as const;
 
-// Zod schema that coerces / clamps an arbitrary string to a valid model name.
-// If the supplied name is not in the FREE_MODELS list we silently fallback
-// to the first (default) option instead of throwing an error.
 const ModelNameSchema = z
   .string()
   .transform((name) => (FREE_MODELS.includes(name as any) ? name : FREE_MODELS[0]));

@@ -14,9 +14,6 @@ export default function ChatScreen() {
 
   const [searchQuery, setSearchQuery] = useState("")
 
-  // const filteredThreads = chatStore.threadsArray.filter((thread) =>
-  //   (thread.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()),
-  // )
   const filteredThreads = useQuery(api.threads.searchThreadsByTitle, {
     searchQuery,
   })
