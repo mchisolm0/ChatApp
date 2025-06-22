@@ -49,17 +49,6 @@ export default function ChatScreen() {
 
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($indexContainer)}>
-      <View style={themed($authButtonsContainer)}>
-        <Authenticated>
-          <SignOutButton />
-        </Authenticated>
-        <Unauthenticated>
-          <SignInButtons />
-        </Unauthenticated>
-        <AuthLoading>
-          <Text>Loading...</Text>
-        </AuthLoading>
-      </View>
       <ChatInterface />
     </Screen>
   );
