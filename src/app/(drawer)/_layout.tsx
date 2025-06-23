@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TouchableOpacity, Text } from 'react-native';
 import { Drawer } from 'expo-router/drawer';
 import CustomDrawer from '@/components/CustomDrawer';
 import { useRouter } from 'expo-router';
@@ -53,6 +54,20 @@ export default function ChatScreen() {
         options={{
           drawerLabel: "Chat Thread",
           title: "Chat Thread",
+          headerRight: () => (
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#D97D54',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                marginRight: 16,
+              }}
+              onPress={() => router.push('/')}
+            >
+              <Text style={{ color: '#fff', fontWeight: '600' }}>New Chat</Text>
+            </TouchableOpacity>
+          ),
         }}
       />
     </Drawer>
