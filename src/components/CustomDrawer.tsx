@@ -22,8 +22,6 @@ import { $authButton, $authButtonText } from '@/styles/chat';
 import { Authenticated, Unauthenticated } from 'convex/react';
 import { useConvexAuth } from 'convex/react';
 import { Id } from 'convex/_generated/dataModel';
-import { useQuery } from 'convex/react';
-import { api } from 'convex/_generated/api';
 import { Doc } from 'convex/_generated/dataModel';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
@@ -70,22 +68,12 @@ export default function CustomDrawer({
 
   // Item component to show each chat thread – hooks allowed here
   const ThreadItem = ({ thread }: { thread: Doc<'threads'> }) => {
-    const lastMessage = useQuery(api.messages.getMessages, {
-      threadId: thread._id,
-      limit: 1,
-    });
-
     return (
       <Button
         style={themed($threadItem)}
         onPress={() => handleThreadPress(thread._id)}
       >
         <Text style={themed($threadTitle)}>{thread.title}</Text>
-        {lastMessage && lastMessage.length > 0 && (
-          <Text style={themed($lastMessage)} numberOfLines={1}>
-            {lastMessage[0].messageChunks[0].content}
-          </Text>
-        )}
       </Button>
     );
   };
