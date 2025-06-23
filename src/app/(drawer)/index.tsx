@@ -45,7 +45,6 @@ function SignOutButton() {
 
 export default function ChatScreen() {
   const { themed } = useAppTheme()
-  const router = useRouter()
 
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($indexContainer)}>
