@@ -47,9 +47,7 @@ export default function ChatScreen() {
   const { themed } = useAppTheme()
 
   return (
-    <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($indexContainer)}>
-      <ChatInterface />
-    </Screen>
+    <ChatInterface />
   );
 }
 

@@ -1,4 +1,5 @@
-import { View, TextInput, ScrollView, Text, TouchableOpacity, Modal } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -50,11 +51,12 @@ const FREE_MODELS = [
   'google/gemini-2.0-flash-001',
 ];
 
-export const ChatInterface = observer(function ChatInterface({ threadId = undefined }: ChatInterfaceProps) {
+export const ChatInterface = observer(function ChatInterface({ threadId }: ChatInterfaceProps) {
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
   const [isModelPickerVisible, setIsModelPickerVisible] = useState(false);
 
   const { theme, themed } = useAppTheme();
+  const insets = useSafeAreaInsetsStyle(['bottom']);
 
   const [isSending, setIsSending] = useState(false);
   const [input, setInput] = useState('');
@@ -90,7 +92,7 @@ export const ChatInterface = observer(function ChatInterface({ threadId = undefi
   );
 
   return (
-    <KeyboardAvoidingView style={themed($chatContainer)}>
+    <KeyboardAvoidingView style={[themed($chatContainer), insets]}>
       <View style={themed($chatTopContainer)}>
         <View style={themed($modelSelector)}>
           <TouchableOpacity
@@ -127,16 +129,21 @@ export const ChatInterface = observer(function ChatInterface({ threadId = undefi
             </TouchableOpacity>
           </Modal>
         </View>
-        <ScrollView style={themed($messagesScroll)}>
-          {messages?.map(message => (
+        <FlatList
+          style={themed($messagesScroll)}
+          data={messages ?? []}
+          keyExtractor={(message) => message._id}
+          renderItem={({item: message}) => (
             <Message
               key={message._id}
               role={message.role}
               content={message.messageChunks.map(chunk => chunk.content).join('')}
               isComplete={message.isComplete}
             />
-          ))}
-        </ScrollView>
+          )}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-start' }}
+          showsVerticalScrollIndicator={true}
+        />
       </View>
       <View style={themed($bottomContainer)}>
         {error && (

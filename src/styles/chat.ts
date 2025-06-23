@@ -63,6 +63,7 @@ export const $modelSelector: ThemedStyle<ViewStyle> = (theme) => ({
   backgroundColor: theme.colors.palette.neutral200,
   borderRadius: theme.spacing.xs,
   marginVertical: theme.spacing.sm,
+  padding: theme.spacing.xs,
 });
 
 export const $modelPicker: ThemedStyle<ViewStyle> = (theme) => ({
@@ -71,6 +72,7 @@ export const $modelPicker: ThemedStyle<ViewStyle> = (theme) => ({
 
 export const $messagesScroll: ThemedStyle<ViewStyle> = (theme) => ({
   flex: 1,
+  marginTop: theme.spacing.sm,
 });
 
 export const $messageContainer: ThemedStyle<ViewStyle> = (theme) => ({
@@ -93,6 +95,9 @@ export const $messageText: ThemedStyle<TextStyle> = (theme) => ({
 export const $bottomContainer: ThemedStyle<ViewStyle> = (theme) => ({
   paddingHorizontal: theme.spacing.md,
   paddingBottom: theme.spacing.xs,
+  borderTopWidth: 1,
+  borderTopColor: theme.colors.palette.neutral300,
+  backgroundColor: theme.colors.background,
 });
 
 export const $pickerText: ThemedStyle<TextStyle> = (theme) => ({
