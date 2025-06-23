@@ -1,6 +1,3 @@
-import { generateAPIUrl } from '@/utils/generateAPIRoutes';
-import { useChat } from '@ai-sdk/react';
-import { fetch as expoFetch } from 'expo/fetch';
 import { View, TextInput, ScrollView, Text, TouchableOpacity, Modal } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { observer } from 'mobx-react-lite';
@@ -22,9 +19,14 @@ import {
   $chatInput,
   $messagesScroll,
 } from '@/styles/chat';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useAction, useConvexAuth, useQuery } from 'convex/react';
+import { api } from 'convex/_generated/api';
+import { Message } from './Message';
+import { Id } from 'convex/_generated/dataModel';
 
 interface ChatInterfaceProps {
-  threadId?: string;
+  threadId?: Id<'threads'>;
   apiEndpoint?: string;
 }
 
@@ -48,23 +50,47 @@ const FREE_MODELS = [
   'google/gemini-2.0-flash-001',
 ];
 
-export const ChatInterface = observer(function ChatInterface({ threadId = 'default', apiEndpoint = '/api/chat' }: ChatInterfaceProps) {
+export const ChatInterface = observer(function ChatInterface({ threadId = undefined }: ChatInterfaceProps) {
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
   const [isModelPickerVisible, setIsModelPickerVisible] = useState(false);
 
-  const { messages, error, handleInputChange, input, handleSubmit } = useChat({
-    fetch: expoFetch as unknown as typeof globalThis.fetch,
-    api: generateAPIUrl(apiEndpoint),
-    body: {
-      modelName: selectedModel,
-    },
-    onError: error => console.error(error, 'ERROR'),
-  });
-
   const { theme, themed } = useAppTheme();
 
+  const [isSending, setIsSending] = useState(false);
+  const [input, setInput] = useState('');
+  const [error, setError] = useState<Error | null>(null);
+  const { isAuthenticated } = useConvexAuth();
+
+  const startChat = useAction(api.chat.startChatMessagePair);
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    try {
+      setIsSending(true);
+      await startChat({
+        threadId,
+        content: input,
+      });
+      setInput('');
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err as Error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    await sendMessage();
+  };
+
+  const messages = useQuery(
+    api.messages.getMessages,
+    threadId ? { threadId, limit: 10 } : "skip"
+  );
+
   return (
-    <View style={themed($chatContainer)}>
+    <KeyboardAvoidingView style={themed($chatContainer)}>
       <View style={themed($chatTopContainer)}>
         <View style={themed($modelSelector)}>
           <TouchableOpacity
@@ -102,13 +128,13 @@ export const ChatInterface = observer(function ChatInterface({ threadId = 'defau
           </Modal>
         </View>
         <ScrollView style={themed($messagesScroll)}>
-          {messages.map(m => (
-            <View key={m.id} style={themed($messageContainer)}>
-              <View>
-                <Text style={themed($roleText)}>{m.role}</Text>
-                <Text style={themed($messageText)}>{m.content}</Text>
-              </View>
-            </View>
+          {messages?.map(message => (
+            <Message
+              key={message._id}
+              role={message.role}
+              content={message.messageChunks.map(chunk => chunk.content).join('')}
+              isComplete={message.isComplete}
+            />
           ))}
         </ScrollView>
       </View>
@@ -122,23 +148,13 @@ export const ChatInterface = observer(function ChatInterface({ threadId = 'defau
           style={themed($chatInput)}
           placeholder="Ask me anything..."
           value={input}
-          onChange={e =>
-            handleInputChange({
-              ...e,
-              target: {
-                ...e.target,
-                value: e.nativeEvent.text,
-              },
-            } as unknown as React.ChangeEvent<HTMLInputElement>)
-          }
-          onSubmitEditing={e => {
-            handleSubmit(e);
-            e.preventDefault();
-          }}
+          onChangeText={setInput}
+          onSubmitEditing={() => handleSubmit()}
+          editable={!isSending}
           autoFocus={true}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 });
 
