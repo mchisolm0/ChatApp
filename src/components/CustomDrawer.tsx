@@ -8,7 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { DrawerContentComponentProps, DrawerContentScrollView } from '@react-navigation/drawer';
+import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
