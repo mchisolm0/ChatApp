@@ -91,7 +91,6 @@ export const $messageText: ThemedStyle<TextStyle> = (theme) => ({
 });
 
 export const $bottomContainer: ThemedStyle<ViewStyle> = (theme) => ({
-  //flex: 1,
   paddingHorizontal: theme.spacing.md,
   paddingBottom: theme.spacing.xs,
 });
@@ -119,6 +118,7 @@ export const $chatInput: ThemedStyle<TextStyle> = (theme) => ({
   padding: theme.spacing.lg,
   paddingVertical: theme.spacing.md,
   borderRadius: theme.spacing.sm,
+  color: theme.colors.text,
   fontSize: 16,
   minHeight: 50,
   shadowColor: theme.colors.palette.neutral900,
