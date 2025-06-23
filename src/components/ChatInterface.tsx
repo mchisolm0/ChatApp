@@ -137,7 +137,7 @@ export const ChatInterface = observer(function ChatInterface({ threadId }: ChatI
             <Message
               key={message._id}
               role={message.role}
-              content={message.messageChunks.map(chunk => chunk.content).join('')}
+              content={message.messageChunks.map((chunk: { content: string }) => chunk.content).join('')}
               isComplete={message.isComplete}
             />
           )}
