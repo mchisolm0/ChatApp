@@ -56,7 +56,7 @@ export const $chatTopContainer: ThemedStyle<ViewStyle> = (theme) => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  paddingHorizontal: theme.spacing.lg,
+  paddingHorizontal: theme.spacing.sm,
 });
 
 export const $modelSelector: ThemedStyle<ViewStyle> = (theme) => ({

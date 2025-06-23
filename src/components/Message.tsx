@@ -65,7 +65,6 @@ const Message = memo(({ role, content, isComplete = true }: MessageProps) => {
 });
 
 const $messageContainer: ThemedStyle<ViewStyle> = (theme) => ({
-  marginBottom: theme.spacing.xs,
   width: '100%',
   flexDirection: 'row',
   marginTop: theme.spacing.xs,
@@ -80,22 +79,22 @@ const $userContainer: ThemedStyle<ViewStyle> = (theme) => ({
 });
 
 const $messageContent: ThemedStyle<ViewStyle> = (theme) => ({
-  borderRadius: theme.spacing.xxs,
-  paddingHorizontal: theme.spacing.xxs,
-  paddingVertical: theme.spacing.xxs,
+  borderRadius: theme.spacing.xs,
+  padding: theme.spacing.xs,
   maxWidth: '80%',
 });
 
 const $assistantContent: ThemedStyle<ViewStyle> = (theme) => ({
-  width: '100%',
-  backgroundColor: theme.colors.palette.neutral200,
+  backgroundColor: theme.colors.palette.neutral500,
+  color: theme.colors.palette.neutral100,
+  borderRadius: theme.spacing.xs,
   alignSelf: 'flex-start',
 });
 
 const $userContent: ThemedStyle<ViewStyle> = (theme) => ({
-  maxWidth: '90%',
   backgroundColor: theme.colors.palette.primary500,
   alignSelf: 'flex-end',
+  marginHorizontal: theme.spacing.sm,
 });
 
 const $typingIndicator: ThemedStyle<ViewStyle> = (theme) => ({
