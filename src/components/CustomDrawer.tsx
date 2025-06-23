@@ -27,7 +27,7 @@ import { api } from 'convex/_generated/api';
 import { Doc } from 'convex/_generated/dataModel';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
-  chatThreads: Doc<'threads'>[];
+  chatThreads: Doc<'threads'>[] | undefined;
   onLogin: () => void;
   onSearchChange: (query: string) => void;
   searchQuery: string;
