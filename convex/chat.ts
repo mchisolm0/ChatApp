@@ -1,3 +1,4 @@
+import { FREE_MODELS } from "@/services/models";
 import { api, internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { query, mutation, action } from "./_generated/server";
@@ -100,7 +101,6 @@ export const startChatMessagePair = action({
 
     const assistantMessageId: Id<"messages"> = assistantMessageResult;
 
-    // 3. Schedule the LLM job immediately
     await ctx.scheduler.runAfter(0, internal.llm.generateAssistantMessage, {
       threadId,
       content,
@@ -111,10 +111,21 @@ export const startChatMessagePair = action({
   },
 });
 
+export const updateThreadTitle = mutation({
+  args: {
+    threadId: v.id("threads"),
+    title: v.string(),
+  },
+  handler: async (ctx, { threadId, title }) => {
+    await ctx.db.patch(threadId, { title });
+  },
+});
+
 // Generate a succinct title for the thread based on the first message pair
 export const generateThreadTitle = action({
-  args: { threadId: v.string() },
-  handler: async (ctx, { threadId }) => {
+  args: { threadId: v.id("threads") },
+  returns: v.object({ title: v.string() }),
+  handler: async (ctx, { threadId }): Promise<{ title: string }> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthorized");
@@ -122,24 +133,32 @@ export const generateThreadTitle = action({
     const userId = identity.tokenIdentifier;
 
     // Fetch first user & assistant messages
-    const messages = await ctx.db
-      .query("messages")
-      .withIndex("by_thread_id", (q) => q.eq("thread_id", threadId))
-      .order("asc")
-      .take(4); // just a few
+    const messages = await ctx.runQuery(api.messages.getMessages, {
+      threadId,
+      limit: 10,
+    });
 
     if (messages.length === 0) {
       throw new Error("No messages found to generate title");
     }
 
-    const prompt = `Generate a concise (max 6 words) descriptive title for the following conversation:\nUser: ${messages[0]?.content}\nAssistant: ${messages[1]?.content ?? ""}`;
+    const userFirst = messages[0]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
+    const assistantFirst = messages[1]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
+    const requestMessages = [
+      { role: "system", content: "You create short thread titles. Reply with max-6-word title." },
+      { role: "user", content: userFirst },
+      { role: "assistant", content: assistantFirst },
+    ];
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       // Fallback: simple heuristic
-      const fallback = messages[0].content.slice(0, 50);
-      await ctx.db.patch(threadId, { title: fallback });
-      return { title: fallback };
+      const fallbackTitle = userFirst.slice(0, 50);
+      await ctx.runMutation(api.chat.updateThreadTitle, {
+        threadId,
+        title: fallbackTitle,
+      });
+      return { title: fallbackTitle };
     }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -149,11 +168,8 @@ export const generateThreadTitle = action({
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemma-3-4b-it:free",
-        messages: [
-          { role: "system", content: "You create short thread titles." },
-          { role: "user", content: prompt },
-        ],
+        model: FREE_MODELS[0],
+        messages: requestMessages,
         stream: false,
       }),
     });
@@ -163,9 +179,15 @@ export const generateThreadTitle = action({
     }
 
     const data = await response.json();
-    const title: string = data.choices?.[0]?.message?.content?.trim() ?? "Untitled Thread";
+    let title: string = data.choices?.[0]?.message?.content?.trim() || "";
+    if (title.length === 0) {
+      title = userFirst.slice(0, 50) || "Untitled Thread";
+    }
 
-    await ctx.db.patch(threadId, { title });
+    await ctx.runMutation(api.chat.updateThreadTitle, {
+      threadId,
+      title,
+    });
     return { title };
   },
 });
