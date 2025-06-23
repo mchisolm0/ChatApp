@@ -8,7 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { DrawerContentComponentProps } from '@react-navigation/drawer';
+import { DrawerContentComponentProps, DrawerContentScrollView } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
@@ -18,12 +18,16 @@ import { Text } from './Text';
 import { useClerk } from '@clerk/clerk-expo';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { Button } from '@/components/Button';
-import { ChatThread } from '@/models/ChatStore';
 import { $authButton, $authButtonText } from '@/styles/chat';
 import { Authenticated, Unauthenticated } from 'convex/react';
+import { useConvexAuth } from 'convex/react';
+import { Id } from 'convex/_generated/dataModel';
+import { useQuery } from 'convex/react';
+import { api } from 'convex/_generated/api';
+import { Doc } from 'convex/_generated/dataModel';
 
 interface CustomDrawerProps extends DrawerContentComponentProps {
-  chatThreads: ChatThread[];
+  chatThreads: Doc<'threads'>[];
   onLogin: () => void;
   onSearchChange: (query: string) => void;
   searchQuery: string;
@@ -52,58 +56,69 @@ export default function CustomDrawer({
 }: CustomDrawerProps) {
   const { themed } = useAppTheme();
   const router = useRouter();
+  const { isAuthenticated } = useConvexAuth()
   const { user } = useClerk()
   const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsetsStyle(["top", "bottom"]);
 
   const handleRefresh = async () => { };
 
-  const handleThreadPress = useCallback((threadId: string) => {
+  const handleThreadPress = useCallback((threadId: Id<'threads'>) => {
     router.push({ pathname: '/[threadId]', params: { threadId } });
     props.navigation.closeDrawer();
   }, [router, props.navigation]);
 
-  const renderChatThread = ({ item }: { item: ChatThread }) => {
-    const lastMessage = item.messages[item.messages.length - 1];
+  // Item component to show each chat thread – hooks allowed here
+  const ThreadItem = ({ thread }: { thread: Doc<'threads'> }) => {
+    const lastMessage = useQuery(api.messages.getMessages, {
+      threadId: thread._id,
+      limit: 1,
+    });
+
     return (
       <Button
         style={themed($threadItem)}
-        onPress={() => handleThreadPress(item.id)}
-        text={item.title}
+        onPress={() => handleThreadPress(thread._id)}
       >
-        {lastMessage && (
-          <Text
-            style={themed($lastMessage)}
-            numberOfLines={1}>
-            text={lastMessage.content}
+        <Text style={themed($threadTitle)}>{thread.title}</Text>
+        {lastMessage && lastMessage.length > 0 && (
+          <Text style={themed($lastMessage)} numberOfLines={1}>
+            {lastMessage[0].messageChunks[0].content}
           </Text>
         )}
       </Button>
     );
   };
 
+  // Render function for FlatList – NO hooks inside
+  const renderChatThread = ({ item }: { item: Doc<'threads'> }) => (
+    <ThreadItem thread={item} />
+  );
+
   return (
     <View style={[themed($container), insets]}>
-      <View style={themed($searchContainer)}>
-        <TextInput
-          style={themed($searchInput)}
-          placeholder="Search chats…"
-          value={searchQuery}
-          onChangeText={onSearchChange}
-          placeholderTextColor="#666"
-        />
+      <View style={themed($topSection)}>
+        <View style={themed($searchContainer)}>
+          <TextInput
+            style={themed($searchInput)}
+            placeholder="Search chats…"
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            placeholderTextColor="#666"
+          />
+        </View>
+        <FlatList
+          data={chatThreads}
+          keyExtractor={(t) => t._id}
+          renderItem={renderChatThread}
+          showsVerticalScrollIndicator={true}
+          scrollEnabled
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          contentInsetAdjustmentBehavior='automatic'
+          style={themed($threadList)}
+          {...props}
+          />
       </View>
-      <FlatList
-        data={chatThreads}
-        keyExtractor={(t) => t.id}
-        renderItem={renderChatThread}
-        showsVerticalScrollIndicator={true}
-        scrollEnabled
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-        contentInsetAdjustmentBehavior='automatic'
-        contentContainerStyle={themed($container)}
-        {...props}
-      />
       <View style={themed($userSection)}>
         <Authenticated>
           <View style={themed($userInfo)}>
@@ -130,6 +145,7 @@ export default function CustomDrawer({
 const $container: ThemedStyle<ViewStyle> = (theme) => ({
   flex: 1,
   backgroundColor: theme.colors.palette.neutral100,
+  justifyContent: 'space-between',
 })
 
 const $searchContainer: ThemedStyle<ViewStyle> = (theme) => ({
@@ -147,8 +163,12 @@ const $searchInput: ThemedStyle<TextStyle> = (theme) => ({
   fontSize: 16,
 })
 
-const $scrollContent: ThemedStyle<ViewStyle> = () => ({
-  flexGrow: 1,
+const $topSection: ThemedStyle<ViewStyle> = () => ({
+  flex: 1,
+})
+
+const $threadList: ThemedStyle<ViewStyle> = () => ({
+  flex: 1,
 })
 
 const $threadItem: ThemedStyle<ViewStyle> = (theme) => ({

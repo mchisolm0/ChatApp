@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useQuery } from 'convex/react';
 import { useConvexAuth } from 'convex/react';
 import { api } from 'convex/_generated/api';
-import { type ChatThread } from '@/models/ChatStore';
+import { Redirect } from 'expo-router';
 
 export default function ChatScreen() {
   const router = useRouter()
@@ -14,12 +14,13 @@ export default function ChatScreen() {
 
   const [searchQuery, setSearchQuery] = useState("")
 
-  const filteredThreads = useQuery(api.threads.searchThreadsByTitle, {
+  if (!isAuthenticated || isLoading) {
+    return <Redirect href={'/sign-in'} />
+  }
+
+  const filteredThreads = useQuery(api.chat.searchThreadsByTitle, {
     searchQuery,
   })
-
-  // Ensure we always pass a ChatThread[] to the drawer, falling back to an empty array while the query is loading
-  const chatThreads = (filteredThreads ?? []) as unknown as ChatThread[]
 
   const handleLogin = () => {
     router.push("/sign-in")
@@ -33,7 +34,7 @@ export default function ChatScreen() {
       drawerContent={(props) => (
         <CustomDrawer
           {...props}
-          chatThreads={chatThreads}
+          chatThreads={filteredThreads}
           onLogin={handleLogin}
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
