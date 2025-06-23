@@ -30,7 +30,7 @@ export const generateAssistantMessage = internalAction({
       const fullPrompt = [
         ...messages.map((m) => ({
           role: m.role,
-          content: m.chunks.map(chunk => chunk.content).join('')
+          content: m.messageChunks.map(chunk => chunk.content).join('')
         })),
         { role: "user", content: args.content },
       ];
