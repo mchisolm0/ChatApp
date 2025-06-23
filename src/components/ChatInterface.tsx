@@ -1,4 +1,4 @@
-import { View, TextInput, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, Modal, FlatList, Pressable } from 'react-native';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { observer } from 'mobx-react-lite';
@@ -19,15 +19,20 @@ import {
   $pickerOptionText,
   $chatInput,
   $messagesScroll,
+  $inputContainer,
+  $sendButton,
+  $sendButtonText,
+  $newChatButton,
+  $newChatButtonText,
 } from '@/styles/chat';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useLocalSearchParams } from 'expo-router';
 import { useAction, useConvexAuth, useQuery } from 'convex/react';
 import { api } from 'convex/_generated/api';
 import { Message } from './Message';
 import { Id } from 'convex/_generated/dataModel';
 
 interface ChatInterfaceProps {
-  threadId?: Id<'threads'>;
   apiEndpoint?: string;
 }
 
@@ -51,7 +56,9 @@ const FREE_MODELS = [
   'google/gemini-2.0-flash-001',
 ];
 
-export const ChatInterface = observer(function ChatInterface({ threadId }: ChatInterfaceProps) {
+export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: ChatInterfaceProps) {
+  const { threadId } = useLocalSearchParams<{ threadId?: Id<'threads'> | undefined }>();
+  const parsedThreadId = threadId ? threadId as Id<'threads'> : undefined;
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
   const [isModelPickerVisible, setIsModelPickerVisible] = useState(false);
 
@@ -69,7 +76,7 @@ export const ChatInterface = observer(function ChatInterface({ threadId }: ChatI
     try {
       setIsSending(true);
       await startChat({
-        threadId,
+        threadId: parsedThreadId,
         content: input,
       });
       setInput('');
@@ -88,7 +95,7 @@ export const ChatInterface = observer(function ChatInterface({ threadId }: ChatI
 
   const messages = useQuery(
     api.messages.getMessages,
-    threadId ? { threadId, limit: 10 } : "skip"
+    parsedThreadId ? { threadId: parsedThreadId, limit: 10 } : "skip"
   );
 
   return (
@@ -151,15 +158,24 @@ export const ChatInterface = observer(function ChatInterface({ threadId }: ChatI
             <Text style={themed($errorText)}>{error.message}</Text>
           </View>
         )}
-        <TextInput
-          style={themed($chatInput)}
-          placeholder="Ask me anything..."
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={() => handleSubmit()}
-          editable={!isSending}
-          autoFocus={true}
-        />
+        <View style={themed($inputContainer)}>
+          <TextInput
+            style={[themed($chatInput), { flex: 1 }]}
+            placeholder="Ask me anything..."
+            value={input}
+            onChangeText={setInput}
+            onSubmitEditing={() => handleSubmit()}
+            editable={!isSending}
+            autoFocus={true}
+          />
+          <TouchableOpacity
+            style={themed($sendButton)}
+            onPress={() => handleSubmit()}
+            disabled={!input.trim() || isSending}
+          >
+            <Text style={themed($sendButtonText)}>➤</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
