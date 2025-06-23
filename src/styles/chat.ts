@@ -118,6 +118,39 @@ export const $pickerOptionText: ThemedStyle<TextStyle> = (theme) => ({
   ...$baseText(theme),
 });
 
+export const $inputContainer: ThemedStyle<ViewStyle> = (theme) => ({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing.sm,
+});
+
+export const $sendButton: ThemedStyle<ViewStyle> = (theme) => ({
+  backgroundColor: theme.colors.palette.primary500,
+  borderRadius: theme.spacing.sm,
+  padding: theme.spacing.sm,
+  justifyContent: 'center',
+  alignItems: 'center',
+  aspectRatio: 1,
+});
+
+export const $sendButtonText: ThemedStyle<TextStyle> = (theme) => ({
+  ...$baseText(theme),
+  color: theme.colors.palette.neutral100,
+  fontSize: 18,
+});
+
+export const $newChatButton: ThemedStyle<ViewStyle> = (theme) => ({
+  backgroundColor: theme.colors.palette.primary500,
+  borderRadius: theme.spacing.sm,
+  padding: theme.spacing.sm,
+  marginLeft: 'auto',
+});
+
+export const $newChatButtonText: ThemedStyle<TextStyle> = (theme) => ({
+  ...$baseText(theme),
+  color: theme.colors.palette.neutral100,
+});
+
 export const $chatInput: ThemedStyle<TextStyle> = (theme) => ({
   backgroundColor: theme.colors.palette.neutral100,
   padding: theme.spacing.lg,
