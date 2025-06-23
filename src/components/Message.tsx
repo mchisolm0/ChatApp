@@ -1,7 +1,9 @@
+import { ThemedStyle } from "@/theme";
 import React from "react";
 import { memo } from "react";
-import { View, Text, StyleSheet, Animated, Easing } from "react-native";
+import { View, Text, StyleSheet, Animated, Easing, ViewStyle } from "react-native";
 import Markdown from 'react-native-marked';
+import { useAppTheme } from "@/utils/useAppTheme";
 
 type MessageProps = {
   role: 'user' | 'assistant';
@@ -10,6 +12,7 @@ type MessageProps = {
 };
 
 const Message = memo(({ role, content, isComplete = true }: MessageProps) => {
+  const { themed } = useAppTheme();
   const pulseAnim = new Animated.Value(0);
 
   // Animation for the typing indicator
@@ -44,54 +47,62 @@ const Message = memo(({ role, content, isComplete = true }: MessageProps) => {
   });
 
   return (
-    <View style={[
-      styles.messageContainer,
-      role === 'assistant' ? styles.assistantContainer : styles.userContainer
-    ]}>
-      <View style={[
-        styles.messageContent,
-        role === 'assistant' ? styles.assistantContent : styles.userContent
-      ]}>
+    <View style={themed([
+      $messageContainer,
+      role === 'assistant' ? $assistantContainer : $userContainer
+    ])}>
+      <View style={themed([
+        $messageContent,
+        role === 'assistant' ? $assistantContent : $userContent
+      ])}>
         <Markdown value={content} />
         {!isComplete && (
-          <Animated.View style={[styles.typingIndicator, { opacity }]} />
+          <Animated.View style={[themed($typingIndicator), { opacity }]} />
         )}
       </View>
     </View>
   );
 });
 
-const styles = StyleSheet.create({
-  messageContainer: {
-    marginBottom: 16,
-    width: '100%',
-    flexDirection: 'row',
-  },
-  assistantContainer: {
-    justifyContent: 'flex-start',
-  },
-  userContainer: {
-    justifyContent: 'flex-end',
-  },
-  messageContent: {
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  assistantContent: {
-    width: '100%',
-    backgroundColor: '#f1f1f1',
-  },
-  userContent: {
-    maxWidth: '90%',
-    backgroundColor: '#007AFF', // iOS blue
-  },
-  typingIndicator: {
-    width: 8,
-    height: 16,
-    backgroundColor: '#000',
-    marginTop: 4,
-  },
+const $messageContainer: ThemedStyle<ViewStyle> = (theme) => ({
+  marginBottom: theme.spacing.xs,
+  width: '100%',
+  flexDirection: 'row',
+  marginTop: theme.spacing.xs,
+});
+
+const $assistantContainer: ThemedStyle<ViewStyle> = (theme) => ({
+  justifyContent: 'flex-start',
+});
+
+const $userContainer: ThemedStyle<ViewStyle> = (theme) => ({
+  justifyContent: 'flex-end',
+});
+
+const $messageContent: ThemedStyle<ViewStyle> = (theme) => ({
+  borderRadius: theme.spacing.xxs,
+  paddingHorizontal: theme.spacing.xxs,
+  paddingVertical: theme.spacing.xxs,
+  maxWidth: '80%',
+});
+
+const $assistantContent: ThemedStyle<ViewStyle> = (theme) => ({
+  width: '100%',
+  backgroundColor: theme.colors.palette.neutral200,
+  alignSelf: 'flex-start',
+});
+
+const $userContent: ThemedStyle<ViewStyle> = (theme) => ({
+  maxWidth: '90%',
+  backgroundColor: theme.colors.palette.primary500,
+  alignSelf: 'flex-end',
+});
+
+const $typingIndicator: ThemedStyle<ViewStyle> = (theme) => ({
+  width: 8,
+  height: 16,
+  backgroundColor: theme.colors.palette.neutral900,
+  marginTop: 4,
 });
 
 export { Message };
