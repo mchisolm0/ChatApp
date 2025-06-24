@@ -61,6 +61,12 @@ export default function CustomDrawer({
 
   const handleRefresh = async () => { };
 
+  const listRef = React.useRef<FlatList>(null);
+
+  const scrollToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
   const handleThreadPress = useCallback((threadId: Id<'threads'>) => {
     router.push({ pathname: '/[threadId]', params: { threadId } });
     props.navigation.closeDrawer();
@@ -96,14 +102,15 @@ export default function CustomDrawer({
           />
         </View>
         <FlatList
+          ref={listRef}
           data={chatThreads}
           keyExtractor={(t) => t._id}
           renderItem={renderChatThread}
           showsVerticalScrollIndicator={true}
           scrollEnabled
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-          inverted
           contentInsetAdjustmentBehavior='automatic'
+          onContentSizeChange={scrollToTop}
           style={themed($threadList)}
           {...props}
           />
