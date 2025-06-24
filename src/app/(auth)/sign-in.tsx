@@ -13,28 +13,45 @@ export default function SignInScreen() {
 
   const [emailAddress, setEmailAddress] = React.useState('')
   const [password, setPassword] = React.useState('')
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [error, setError] = React.useState('')
 
   const onSignInPress = async () => {
     if (!isLoaded) return
+    
+    // Validate inputs
+    if (!emailAddress.trim() || !password.trim()) {
+      setError('Please enter both email and password')
+      return
+    }
+    
+    setIsSubmitting(true)
+    setError('')
 
     try {
       const signInAttempt = await signIn.create({
-        identifier: emailAddress,
+        identifier: emailAddress.trim(),
         password,
       })
 
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId })
         router.replace('/')
-      } else if(__DEV__) {
-        console.error(JSON.stringify(signInAttempt, null, 2))
+      } else {
+        setError('Sign-in incomplete. Please try again.')
       }
-    } catch (err) {
-      if(__DEV__) {
-        console.error(JSON.stringify(err, null, 2))
+    } catch (err: any) {
+      // Provide more specific error messages based on the error
+      const errorMessage = err?.errors?.[0]?.message || 'Invalid email or password. Please try again.'
+      setError(errorMessage)
+      if (__DEV__) {
+        console.error('Sign-in error:', err)
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
+
 
   const { themed } = useAppTheme()
 
@@ -42,32 +59,36 @@ export default function SignInScreen() {
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed(styles.$container)}>
       <Text style={themed(styles.$title)}>Sign in</Text>
       <KeyboardAvoidingView>
-      <TextInput
-        autoCapitalize="none"
-        value={emailAddress}
-        placeholder="Enter email"
-        style={themed(styles.$input)}
-        onChangeText={setEmailAddress}
-      />
-      <TextInput
-        value={password}
-        placeholder="Enter password"
-        secureTextEntry
-        style={themed(styles.$input)}
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity
-        style={themed(styles.$button)}
-        onPress={onSignInPress}
-      >
-        <Text style={themed(styles.$buttonText)}>Sign in</Text>
-      </TouchableOpacity>
-      <View style={themed(styles.$footer)}>
-        <Text style={themed(styles.$footerText)}>Don't have an account?</Text>
-        <Link href="/sign-up" asChild>
-          <Text style={themed(styles.$link)}>Sign up</Text>
-        </Link>
-      </View>
+        <TextInput
+          autoCapitalize="none"
+          value={emailAddress}
+          placeholder="Enter email"
+          style={themed(styles.$input)}
+          onChangeText={setEmailAddress}
+        />
+        <TextInput
+          value={password}
+          placeholder="Enter password"
+          secureTextEntry
+          style={themed(styles.$input)}
+          onChangeText={setPassword}
+        />
+        {error ? (
+          <Text style={themed(styles.$errorText)}>{error}</Text>
+        ) : null}
+        <TouchableOpacity
+          style={[themed(styles.$button), isSubmitting && themed(styles.$buttonDisabled)]}
+          onPress={onSignInPress}
+          disabled={isSubmitting}
+        >
+          <Text style={themed(styles.$buttonText)}>{isSubmitting ? 'Signing in...' : 'Sign in'}</Text>
+        </TouchableOpacity>
+        <View style={themed(styles.$footer)}>
+          <Text style={themed(styles.$footerText)}>Don't have an account?</Text>
+          <Link href="/sign-up" asChild>
+            <Text style={themed(styles.$link)}>Sign up</Text>
+          </Link>
+        </View>
       </KeyboardAvoidingView>
     </Screen>
   )
