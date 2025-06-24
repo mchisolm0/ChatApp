@@ -1,11 +1,11 @@
 import { useSignIn } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { Screen } from '@/components'
 import React from 'react'
 import { useAppTheme } from '../../utils/useAppTheme'
 import * as styles from '../../styles/auth'
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -18,13 +18,13 @@ export default function SignInScreen() {
 
   const onSignInPress = async () => {
     if (!isLoaded) return
-    
+
     // Validate inputs
     if (!emailAddress.trim() || !password.trim()) {
       setError('Please enter both email and password')
       return
     }
-    
+
     setIsSubmitting(true)
     setError('')
 
@@ -58,7 +58,7 @@ export default function SignInScreen() {
   return (
     <Screen safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed(styles.$container)}>
       <Text style={themed(styles.$title)}>Sign in</Text>
-      <KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={50} style={{ width: '100%' }}>
         <TextInput
           autoCapitalize="none"
           value={emailAddress}
