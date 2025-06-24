@@ -102,6 +102,7 @@ export default function CustomDrawer({
           showsVerticalScrollIndicator={true}
           scrollEnabled
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          inverted
           contentInsetAdjustmentBehavior='automatic'
           style={themed($threadList)}
           {...props}
