@@ -71,6 +71,7 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
   const { isAuthenticated } = useConvexAuth();
 
   const startChat = useAction(api.chat.startChatMessagePair);
+  const generateThreadTitle = useAction(api.chat.generateThreadTitle);
   const sendMessage = async () => {
     if (!input.trim()) return;
     try {
@@ -82,6 +83,7 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
       setInput('');
       setError(null);
       if (threadId) {
+        generateThreadTitle({ threadId });
         router.replace(`/${threadId}`);
       }
     } catch (err) {

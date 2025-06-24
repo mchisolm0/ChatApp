@@ -118,7 +118,7 @@ export const updateThreadTitle = mutation({
     title: v.string(),
   },
   handler: async (ctx, { threadId, title }) => {
-    await ctx.db.patch(threadId, { title });
+    await ctx.db.patch(threadId, { title: title });
   },
 });
 
@@ -136,7 +136,7 @@ export const generateThreadTitle = action({
     // Fetch first user & assistant messages
     const messages = await ctx.runQuery(api.messages.getMessages, {
       threadId,
-      limit: 10,
+      limit: 2,
     });
 
     if (messages.length === 0) {
@@ -146,7 +146,7 @@ export const generateThreadTitle = action({
     const userFirst = messages[0]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
     const assistantFirst = messages[1]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
     const requestMessages = [
-      { role: "system", content: "You create short thread titles. Reply with max-6-word title." },
+      { role: "system", content: "You are an assistant that returns ONLY a concise title. • Max 6 words. • Max 30 characters. • Avoid quotation marks or punctuation at the end. • Reply with the title text ONLY." },
       { role: "user", content: userFirst },
       { role: "assistant", content: assistantFirst },
     ];
@@ -180,10 +180,15 @@ export const generateThreadTitle = action({
     }
 
     const data = await response.json();
-    let title: string = data.choices?.[0]?.message?.content?.trim() || "";
-    if (title.length === 0) {
-      title = userFirst.slice(0, 50) || "Untitled Thread";
-    }
+
+    const sanitizeTitle = (raw: string): string => {
+      const compressed = raw.replace(/\s+/g, " ").trim();     // collapse spaces
+      let words = compressed.split(" ").slice(0, 6).join(" "); // keep ≤6 words
+      if (words.length > 30) words = words.slice(0, 30).trim(); // trim to 30 chars
+      // ensure we didn’t chop down to nothing
+      return words.length ? words : "Untitled Thread";
+    };
+    const title = sanitizeTitle(data.choices?.[0]?.message?.content?.trim() || "");
 
     await ctx.runMutation(api.chat.updateThreadTitle, {
       threadId,
