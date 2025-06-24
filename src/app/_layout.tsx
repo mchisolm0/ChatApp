@@ -22,6 +22,12 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
 });
 
+const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error('Add your Clerk Publishable Key to the .env file')
+}
+
 if (__DEV__) {
   // Load Reactotron configuration in development. We don't want to
   // include this in our production bundle, so we are using `if (__DEV__)`
@@ -81,7 +87,7 @@ function Root() {
 
   return (
     <ClerkProvider
-      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      publishableKey={PUBLISHABLE_KEY}
       tokenCache={tokenCache}
       standardBrowser={Platform.OS === "web" ? true : false}
     >
