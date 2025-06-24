@@ -6,8 +6,8 @@ import { useWarmUpBrowser } from '../../utils/useWarmUpBrowser'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { Screen } from '@/components'
 import React from 'react'
-import { useAppTheme } from '../../utils/useAppTheme'
-import * as styles from '../../styles/auth'
+import { useAppTheme } from '@/utils/useAppTheme'
+import * as styles from '@/styles/auth'
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn()
