@@ -46,7 +46,7 @@ export const generateAssistantMessage = internalAction({
       let lastFlushTime = Date.now();
       let flushTimeout: NodeJS.Timeout | null = null;
 
-      const flush = async (force = false) => {
+      const flush = async (force = false, retryCount = 0) => {
         if (!force && (buffer.length < MIN_CHUNK_SIZE || Date.now() - lastFlushTime < FLUSH_INTERVAL)) {
           return;
         }
@@ -65,11 +65,15 @@ export const generateAssistantMessage = internalAction({
           });
         } catch (error) {
           console.error("Failed to save message chunk:", error);
+          if(retryCount < 10){
+            console.error("Max retries reached, discarding message chunk" + contentToFlush);
+            throw error;
+          }
           // In case of error, add content back to buffer
           buffer = contentToFlush + buffer;
           // Retry after a short delay
           await new Promise(resolve => setTimeout(resolve, 1000));
-          await flush(true);
+          await flush(true, retryCount + 1);
         }
       };
 
