@@ -64,6 +64,7 @@ export const searchThreadsByTitle = query({
     const threads = await ctx.db
       .query("threads")
       .withIndex("by_user_id", (q) => q.eq("user_id", userId))
+      .order("desc")
       .collect();
 
     return threads.filter((t) => (t.title ?? "").toLowerCase().includes(lower));
