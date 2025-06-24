@@ -38,7 +38,7 @@ const Message = memo(({ role, content, isComplete = true }: MessageProps) => {
       return () => pulse.stop();
     }
     return undefined; // Explicitly return undefined when isComplete is true
-  }, [isComplete]);
+  }, [isComplete, pulseAnim]);
 
   // Interpolate the animation value for the typing indicator
   const opacity = pulseAnim.interpolate({
