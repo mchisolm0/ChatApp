@@ -16,7 +16,7 @@ export const createMessage = mutation({
       role: args.role,
       isComplete: args.isComplete,
       error: null,
-      user_id: args.userId || "",
+      user_id: args.userId || undefined,
       created_at: Date.now(),
       updated_at: Date.now()
     });
