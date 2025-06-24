@@ -18,6 +18,7 @@ export const generateAssistantMessage = internalAction({
   args: {
     threadId: v.id("threads"),
     content: v.string(),
+    model: v.string(),
     assistantMessageId: v.id("messages"),
   },
 
@@ -36,7 +37,7 @@ export const generateAssistantMessage = internalAction({
       ];
 
       const result = streamText({
-        model: openrouter(FREE_MODELS[0]),
+        model: openrouter(args.model),
         system: `You are helpful assistant.`,
         messages: fullPrompt as CoreMessage[],
       });

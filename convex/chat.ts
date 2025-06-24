@@ -74,12 +74,13 @@ export const startChatMessagePair = action({
   args: {
     threadId: v.optional(v.id('threads')),
     content: v.string(),
+    model: v.optional(v.string()),
   },
   returns: v.object({
     threadId: v.id("threads"),
     assistantMessageId: v.id("messages"),
   }),
-  handler: async (ctx, { threadId, content }): Promise<{ threadId: Id<"threads">; assistantMessageId: Id<"messages"> }> => {
+  handler: async (ctx, { threadId, content, model }): Promise<{ threadId: Id<"threads">; assistantMessageId: Id<"messages"> }> => {
     if (!threadId) {
       threadId = await ctx.runMutation(api.chat.createThread, {
         error: undefined,
@@ -102,9 +103,14 @@ export const startChatMessagePair = action({
 
     const assistantMessageId: Id<"messages"> = assistantMessageResult;
 
+    if (!model) {
+      model = FREE_MODELS[0];
+    }
+    
     await ctx.scheduler.runAfter(0, internal.llm.generateAssistantMessage, {
       threadId,
       content,
+      model,
       assistantMessageId,
     });
 

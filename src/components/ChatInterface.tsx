@@ -79,6 +79,7 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
       const { threadId } = await startChat({
         threadId: parsedThreadId,
         content: input,
+        model: selectedModel,
       });
       setInput('');
       setError(null);
