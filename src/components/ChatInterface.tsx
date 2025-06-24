@@ -101,7 +101,7 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
 
   const messages = useQuery(
     api.messages.getMessages,
-    parsedThreadId ? { threadId: parsedThreadId, limit: 10 } : "skip"
+    parsedThreadId ? { threadId: parsedThreadId, limit: 100 } : "skip"
   );
 
   return (
