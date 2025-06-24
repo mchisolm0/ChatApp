@@ -1,15 +1,18 @@
 import * as React from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import * as AuthSession from 'expo-auth-session'
+import { useWarmUpBrowser } from '../../utils/useWarmUpBrowser'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 
 import { Screen } from '@/components'
-import { useSignUp } from '@clerk/clerk-expo'
+import { UsernameModal } from '@/components/UsernameModal'
+import { useSignUp, useSSO } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import { useAppTheme } from '../../utils/useAppTheme'
 import * as styles from '../../styles/auth'
 
 export default function SignUpScreen() {
-  const { isLoaded, signUp, setActive } = useSignUp()
+  const { isLoaded: signUpLoaded, signUp, setActive: setActiveSignUp } = useSignUp()
   const router = useRouter()
 
   const [emailAddress, setEmailAddress] = React.useState('')
@@ -19,9 +22,72 @@ export default function SignUpScreen() {
   const [code, setCode] = React.useState('')
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [error, setError] = React.useState('')
+  const [showUsernameModal, setShowUsernameModal] = React.useState(false)
+  const [pendingSignUp, setPendingSignUp] = React.useState<any>(null)
+
+
+  // Apple SSO
+  const { startSSOFlow } = useSSO();
+
+  // Warm-up browser
+  useWarmUpBrowser();
+
+  const onApplePress = React.useCallback(async () => {
+    if (!signUpLoaded) return;
+    try {
+      const { createdSessionId, signUp: signUpAttempt, setActive: setActiveSSO } = await startSSOFlow({
+        strategy: 'oauth_apple',
+        redirectUrl: AuthSession.makeRedirectUri(
+          {
+            scheme: 'chatapp',
+            path: '/',
+          }
+        ),
+      });
+      if (createdSessionId && setActiveSSO) {
+        await setActiveSSO({ session: createdSessionId });
+      } else if (signUpAttempt && signUpAttempt.status !== 'complete') {
+        setPendingSignUp(signUpAttempt);
+        setShowUsernameModal(true);
+      }
+    } catch (err) {
+      if (__DEV__) {
+        console.error('Apple SSO error:', err);
+      }
+      setError('Apple sign-up failed. Please try again.');
+    }
+  }, [signUpLoaded, startSSOFlow]);
+
+  const onUsernameSubmit = React.useCallback(
+    async (username: string) => {
+      try {
+        setIsSubmitting(true);
+        setError('');
+
+        if (pendingSignUp) {
+          const updatedSignUp = await pendingSignUp.update({ username });
+
+          if (updatedSignUp.status === 'complete') {
+            await setActiveSignUp!({ session: updatedSignUp.createdSessionId });
+            setShowUsernameModal(false);
+            setPendingSignUp(null);
+          }
+        }
+      } catch (err: any) {
+        const message = err?.errors?.[0]?.message || 'Failed to set username. Please try again.';
+        setError(message);
+        if (__DEV__) {
+          console.error('Username update error:', err);
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [pendingSignUp, setActiveSignUp],
+  );
 
   const onSignUpPress = async () => {
-    if (!isLoaded) return
+    if (!signUpLoaded) return
 
     // Validate inputs
     if (!emailAddress.trim() || !password.trim()) {
@@ -54,7 +120,7 @@ export default function SignUpScreen() {
   }
 
   const onVerifyPress = async () => {
-    if (!isLoaded) return
+    if (!signUpLoaded) return
 
     if (!code.trim()) {
       setError('Please enter the verification code')
@@ -70,7 +136,7 @@ export default function SignUpScreen() {
       })
 
       if (signUpAttempt.status === 'complete') {
-        await setActive({ session: signUpAttempt.createdSessionId })
+        await setActiveSignUp!({ session: signUpAttempt.createdSessionId })
         router.replace('/')
       } else {
         setError('Verification incomplete. Please try again.')
@@ -150,6 +216,13 @@ export default function SignUpScreen() {
       >
         <Text style={themed(styles.$buttonText)}>{isSubmitting ? 'Creating account...' : 'Continue'}</Text>
       </TouchableOpacity>
+      {/* Apple SSO */}
+      <TouchableOpacity
+        style={themed(styles.$button)}
+        onPress={onApplePress}
+      >
+        <Text style={themed(styles.$buttonText)}>Continue with Apple</Text>
+      </TouchableOpacity>
       <View style={themed(styles.$footer)}>
         <Text style={themed(styles.$footerText)}>Already have an account?</Text>
         <Link href="/sign-in">
@@ -157,6 +230,17 @@ export default function SignUpScreen() {
         </Link>
       </View>
       </KeyboardAvoidingView>
+      <UsernameModal
+        visible={showUsernameModal}
+        onClose={() => {
+          setShowUsernameModal(false);
+          setPendingSignUp(null);
+          setError('');
+        }}
+        error={error}
+        isSubmitting={isSubmitting}
+        onSubmit={onUsernameSubmit}
+      />
     </Screen>
   )
 }

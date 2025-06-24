@@ -1,6 +1,8 @@
-import { useSignIn } from '@clerk/clerk-expo'
+import { useSignIn, useSSO } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import * as AuthSession from 'expo-auth-session'
+import { useWarmUpBrowser } from '../../utils/useWarmUpBrowser'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { Screen } from '@/components'
 import React from 'react'
@@ -15,7 +17,34 @@ export default function SignInScreen() {
   const [password, setPassword] = React.useState('')
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [error, setError] = React.useState('')
+  // Apple SSO
+  const { startSSOFlow } = useSSO();
 
+  // Warm-up browser for smoother OAuth
+  useWarmUpBrowser();
+
+  const onApplePress = React.useCallback(async () => {
+    if (!isLoaded) return;
+    try {
+      const { createdSessionId, setActive: setActiveSSO, signIn: signInSSO } = await startSSOFlow({
+        strategy: 'oauth_apple',
+        redirectUrl: AuthSession.makeRedirectUri(
+          {
+            scheme: 'chatapp',
+            path: '/',
+          }
+        ),
+      });
+      if (createdSessionId && setActiveSSO) {
+        await setActiveSSO!({ session: createdSessionId });
+      }
+    } catch (err) {
+      if (__DEV__) {
+        console.error('Apple SSO error:', err);
+      }
+      setError('Apple sign-in failed. Please try again.');
+    }
+  }, [isLoaded, startSSOFlow]);
   const onSignInPress = async () => {
     if (!isLoaded) return
 
@@ -82,6 +111,13 @@ export default function SignInScreen() {
           disabled={isSubmitting}
         >
           <Text style={themed(styles.$buttonText)}>{isSubmitting ? 'Signing in...' : 'Sign in'}</Text>
+        </TouchableOpacity>
+        {/* Apple SSO */}
+        <TouchableOpacity
+          style={themed(styles.$button)}
+          onPress={onApplePress}
+        >
+          <Text style={themed(styles.$buttonText)}>Continue with Apple</Text>
         </TouchableOpacity>
         <View style={themed(styles.$footer)}>
           <Text style={themed(styles.$footerText)}>Don't have an account?</Text>
