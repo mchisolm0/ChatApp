@@ -93,7 +93,6 @@ const $messageContent: ThemedStyle<ViewStyle> = (theme) => ({
 
 const $assistantContent: ThemedStyle<ViewStyle> = (theme) => ({
   backgroundColor: theme.colors.palette.neutral500,
-  color: theme.colors.palette.neutral100,
   borderRadius: theme.spacing.xs,
   alignSelf: 'flex-start',
 });
