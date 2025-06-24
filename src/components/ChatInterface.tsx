@@ -26,7 +26,7 @@ import {
   $newChatButtonText,
 } from '@/styles/chat';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useAction, useConvexAuth, useQuery } from 'convex/react';
 import { api } from 'convex/_generated/api';
 import { Message } from './Message';
@@ -75,12 +75,15 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
     if (!input.trim()) return;
     try {
       setIsSending(true);
-      await startChat({
+      const { threadId } = await startChat({
         threadId: parsedThreadId,
         content: input,
       });
       setInput('');
       setError(null);
+      if (threadId) {
+        router.replace(`/${threadId}`);
+      }
     } catch (err) {
       console.error(err);
       setError(err as Error);

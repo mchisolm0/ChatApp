@@ -76,9 +76,10 @@ export const startChatMessagePair = action({
     content: v.string(),
   },
   returns: v.object({
+    threadId: v.id("threads"),
     assistantMessageId: v.id("messages"),
   }),
-  handler: async (ctx, { threadId, content }) => {
+  handler: async (ctx, { threadId, content }): Promise<{ threadId: Id<"threads">; assistantMessageId: Id<"messages"> }> => {
     if (!threadId) {
       threadId = await ctx.runMutation(api.chat.createThread, {
         error: undefined,
@@ -107,7 +108,7 @@ export const startChatMessagePair = action({
       assistantMessageId,
     });
 
-    return { assistantMessageId };
+    return { threadId, assistantMessageId };
   },
 });
 
