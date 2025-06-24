@@ -26,11 +26,13 @@ export default function SignInScreen() {
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId })
         router.replace('/')
-      } else {
+      } else if(__DEV__) {
         console.error(JSON.stringify(signInAttempt, null, 2))
       }
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
+      if(__DEV__) {
+        console.error(JSON.stringify(err, null, 2))
+      }
     }
   }
 
