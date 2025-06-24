@@ -143,7 +143,7 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
           style={themed($messagesScroll)}
           data={messages ?? []}
           keyExtractor={(message) => message._id}
-          renderItem={({item: message}) => (
+          renderItem={({ item: message }) => (
             <Message
               key={message._id}
               role={message.role}
