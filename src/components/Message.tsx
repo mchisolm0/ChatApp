@@ -13,7 +13,7 @@ type MessageProps = {
 
 const Message = memo(({ role, content, isComplete = true }: MessageProps) => {
   const { themed } = useAppTheme();
-  const pulseAnim = new Animated.Value(0);
+  const pulseAnim = React.useRef(new Animated.Value(0)).current;
 
   // Animation for the typing indicator
   React.useEffect(() => {
