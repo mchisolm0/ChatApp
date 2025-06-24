@@ -112,7 +112,6 @@ export default function CustomDrawer({
           contentInsetAdjustmentBehavior='automatic'
           onContentSizeChange={scrollToTop}
           style={themed($threadList)}
-          {...props}
           />
       </View>
       <View style={themed($userSection)}>
