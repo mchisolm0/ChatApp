@@ -58,7 +58,7 @@ const FREE_MODELS = [
 
 export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: ChatInterfaceProps) {
   const { threadId } = useLocalSearchParams<{ threadId?: Id<'threads'> | undefined }>();
-  const parsedThreadId = threadId ? threadId as Id<'threads'> : undefined;
+  const parsedThreadId = threadId ? threadId : undefined;
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
   const [isModelPickerVisible, setIsModelPickerVisible] = useState(false);
 
