@@ -55,7 +55,14 @@ const Message = memo(({ role, content, isComplete = true }: MessageProps) => {
         $messageContent,
         role === 'assistant' ? $assistantContent : $userContent
       ])}>
-        <Markdown value={content} />
+        {(() => {
+          try {
+            return <Markdown value={content} />;
+          } catch (error) {
+            console.error('Markdown rendering failed:', error);
+            return <Text>{content}</Text>;
+          }
+        })()}
         {!isComplete && (
           <Animated.View style={[themed($typingIndicator), { opacity }]} />
         )}
