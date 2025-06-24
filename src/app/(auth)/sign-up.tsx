@@ -15,40 +15,74 @@ export default function SignUpScreen() {
   const [password, setPassword] = React.useState('')
   const [pendingVerification, setPendingVerification] = React.useState(false)
   const [code, setCode] = React.useState('')
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [error, setError] = React.useState('')
 
   const onSignUpPress = async () => {
     if (!isLoaded) return
 
+    // Validate inputs
+    if (!emailAddress.trim() || !password.trim()) {
+      setError('Please enter both email and password')
+      return
+    }
+
+    setIsSubmitting(true)
+    setError('')
+
     try {
       await signUp.create({
-        emailAddress,
+        emailAddress: emailAddress.trim(),
         password,
       })
 
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
 
       setPendingVerification(true)
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
+    } catch (err: any) {
+      const errorMessage = err?.errors?.[0]?.message || 'Failed to create account. Please try again.'
+      setError(errorMessage)
+      if (__DEV__) {
+        console.error('Sign-up error:', err)
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const onVerifyPress = async () => {
     if (!isLoaded) return
 
+    if (!code.trim()) {
+      setError('Please enter the verification code')
+      return
+    }
+
+    setIsSubmitting(true)
+    setError('')
+
     try {
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
-        code,
+        code: code.trim(),
       })
 
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId })
         router.replace('/')
       } else {
-        console.error(JSON.stringify(signUpAttempt, null, 2))
+        setError('Verification incomplete. Please try again.')
+        if (__DEV__) {
+          console.error('Verification incomplete:', signUpAttempt)
+        }
       }
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
+    } catch (err: any) {
+      const errorMessage = err?.errors?.[0]?.message || 'Invalid verification code. Please try again.'
+      setError(errorMessage)
+      if (__DEV__) {
+        console.error('Verification error:', err)
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -64,8 +98,15 @@ export default function SignUpScreen() {
           style={themed(styles.$input)}
           onChangeText={(code) => setCode(code)}
         />
-        <TouchableOpacity style={themed(styles.$button)} onPress={onVerifyPress}>
-          <Text style={themed(styles.$buttonText)}>Verify</Text>
+        {error ? (
+          <Text style={themed(styles.$errorText)}>{error}</Text>
+        ) : null}
+        <TouchableOpacity
+          style={[themed(styles.$button), isSubmitting && themed(styles.$buttonDisabled)]}
+          onPress={onVerifyPress}
+          disabled={isSubmitting}
+        >
+          <Text style={themed(styles.$buttonText)}>{isSubmitting ? 'Verifying...' : 'Verify'}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -89,8 +130,15 @@ export default function SignUpScreen() {
         style={themed(styles.$input)}
         onChangeText={(password) => setPassword(password)}
       />
-      <TouchableOpacity style={themed(styles.$button)} onPress={onSignUpPress}>
-        <Text style={themed(styles.$buttonText)}>Continue</Text>
+      {error ? (
+        <Text style={themed(styles.$errorText)}>{error}</Text>
+      ) : null}
+      <TouchableOpacity
+        style={[themed(styles.$button), isSubmitting && themed(styles.$buttonDisabled)]}
+        onPress={onSignUpPress}
+        disabled={isSubmitting}
+      >
+        <Text style={themed(styles.$buttonText)}>{isSubmitting ? 'Creating account...' : 'Continue'}</Text>
       </TouchableOpacity>
       <View style={themed(styles.$footer)}>
         <Text style={themed(styles.$footerText)}>Already have an account?</Text>
