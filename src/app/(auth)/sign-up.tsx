@@ -10,6 +10,7 @@ import { useSignUp, useSSO } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import { useAppTheme } from '../../utils/useAppTheme'
 import * as styles from '../../styles/auth'
+import { Platform } from 'react-native'
 
 export default function SignUpScreen() {
   const { isLoaded: signUpLoaded, signUp, setActive: setActiveSignUp } = useSignUp()
@@ -30,7 +31,9 @@ export default function SignUpScreen() {
   const { startSSOFlow } = useSSO();
 
   // Warm-up browser
-  useWarmUpBrowser();
+  if (Platform.OS !== 'web') {
+    useWarmUpBrowser();
+  }
 
   const onApplePress = React.useCallback(async () => {
     if (!signUpLoaded) return;
@@ -159,7 +162,7 @@ export default function SignUpScreen() {
 
   if (pendingVerification) {
     return (
-      <View style={themed(styles.$container)}>
+      <KeyboardAvoidingView style={themed(styles.$container)}>
         <Text style={themed(styles.$title)}>Verify your email</Text>
         <TextInput
           value={code}
@@ -177,7 +180,7 @@ export default function SignUpScreen() {
         >
           <Text style={themed(styles.$buttonText)}>{isSubmitting ? 'Verifying...' : 'Verify'}</Text>
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     )
   }
 

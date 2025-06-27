@@ -8,6 +8,7 @@ import { Screen } from '@/components'
 import React from 'react'
 import { useAppTheme } from '@/utils/useAppTheme'
 import * as styles from '@/styles/auth'
+import { Platform } from 'react-native'
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -21,7 +22,9 @@ export default function SignInScreen() {
   const { startSSOFlow } = useSSO();
 
   // Warm-up browser for smoother OAuth
-  useWarmUpBrowser();
+  if (Platform.OS !== 'web') {
+    useWarmUpBrowser();
+  }
 
   const onApplePress = React.useCallback(async () => {
     if (!isLoaded) return;
