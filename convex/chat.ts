@@ -4,6 +4,13 @@ import { Id } from "./_generated/dataModel";
 import { query, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
 
+import { generateText, CoreMessage } from "ai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 export const listThreadsByUser = query({
   args: {},
   handler: async (ctx) => {
@@ -107,7 +114,7 @@ export const startChatMessagePair = action({
     if (!model) {
       model = FREE_MODELS[0];
     }
-    
+
     await ctx.scheduler.runAfter(0, internal.llm.generateAssistantMessage, {
       threadId,
       content,
@@ -149,10 +156,13 @@ export const generateThreadTitle = action({
     if (messages.length === 0) {
       throw new Error("No messages found to generate title");
     }
+    if(userId !== messages[0].user_id) {
+      throw new Error("Unauthorized");
+    }
 
     const userFirst = messages[0]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
     const assistantFirst = messages[1]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
-    const requestMessages = [
+    const requestMessages: CoreMessage[] = [
       { role: "system", content: "You are an assistant that returns ONLY a concise title. • Max 6 words. • Max 30 characters. • Avoid quotation marks or punctuation at the end. • Reply with the title text ONLY." },
       { role: "user", content: userFirst },
       { role: "assistant", content: assistantFirst },
@@ -169,33 +179,17 @@ export const generateThreadTitle = action({
       return { title: fallbackTitle };
     }
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: FREE_MODELS[0],
-        messages: requestMessages,
-        stream: false,
-      }),
+    const { text: rawTitle } = await generateText({
+      model: openrouter(FREE_MODELS[0]),
+      messages: requestMessages,
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenRouter title request failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
     const sanitizeTitle = (raw: string): string => {
-      const compressed = raw.replace(/\s+/g, " ").trim();     // collapse spaces
-      let words = compressed.split(" ").slice(0, 6).join(" "); // keep ≤6 words
-      if (words.length > 30) words = words.slice(0, 30).trim(); // trim to 30 chars
-      // ensure we didn’t chop down to nothing
+      const compressed = raw.replace(/\s+/g, " ").trim();
+      let words = compressed.split(" ").slice(0, 6).join(" ");
       return words.length ? words : "Untitled Thread";
     };
-    const title = sanitizeTitle(data.choices?.[0]?.message?.content?.trim() || "");
+    const title = sanitizeTitle(rawTitle.trim());
 
     await ctx.runMutation(api.chat.updateThreadTitle, {
       threadId,
