@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Modal, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useAppTheme } from '../utils/useAppTheme';
 import * as authStyles from '../styles/auth';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 interface UsernameModalProps {
   visible: boolean;
@@ -34,7 +35,7 @@ export function UsernameModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView style={styles.modalOverlay}>
         <View style={themed(authStyles.$container)}>
           <Text style={themed(authStyles.$title)}>Choose a username</Text>
           <TextInput
@@ -57,7 +58,7 @@ export function UsernameModal({
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
