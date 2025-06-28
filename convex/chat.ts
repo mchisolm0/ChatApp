@@ -38,19 +38,13 @@ export const listMessagesByThread = query({
 });
 
 export const getThreadById = query({
-  args: { threadId: v.id("threads") },
+  args: { threadId: v.id("threads"), userId: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized: Please sign in.");
-    }
-    const userId = identity.tokenIdentifier;
-
     const thread = await ctx.db.get(args.threadId);
     if (!thread) {
       throw new Error("Thread not found.");
     }
-    if (thread.user_id !== userId) {
+    if (thread.user_id !== args.userId) {
       throw new Error("Forbidden: thread does not belong to this user.");
     }
     return thread;
@@ -61,7 +55,7 @@ export const searchThreadsByTitle = query({
   args: { searchQuery: v.string() },
   handler: async (ctx, { searchQuery }) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    if (identity === null) {
       throw new Error("Unauthorized: Please sign in.");
     }
     const userId = identity.tokenIdentifier;
@@ -90,10 +84,10 @@ export const startChatMessagePair = action({
   }),
   handler: async (ctx, { threadId, content, model }): Promise<{ threadId: Id<"threads">; assistantMessageId: Id<"messages"> }> => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = identity?.tokenIdentifier;
+    if (!userId) {
       throw new Error("Unauthorized: Please sign in.");
     }
-    const userId = identity.tokenIdentifier;
     if (!threadId) {
       threadId = await ctx.runMutation(api.chat.createThread, {
         error: undefined,
@@ -123,6 +117,7 @@ export const startChatMessagePair = action({
 
     await ctx.scheduler.runAfter(0, internal.llm.generateAssistantMessage, {
       threadId,
+      userId,
       content,
       model,
       assistantMessageId,
@@ -144,20 +139,13 @@ export const updateThreadTitle = mutation({
 
 // Generate a succinct title for the thread based on the first message pair
 export const generateThreadTitle = action({
-  args: { threadId: v.id("threads") },
+  args: { threadId: v.id("threads"), userId: v.string() },
   returns: v.object({ title: v.string() }),
-  handler: async (ctx, { threadId }): Promise<{ title: string }> => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.tokenIdentifier;
-
-    const thread = await ctx.runQuery(api.chat.getThreadById, { threadId });
+  handler: async (ctx, { threadId, userId }): Promise<{ title: string }> => {
+    const thread = await ctx.runQuery(api.chat.getThreadById, { threadId, userId });
     if (!thread) {
       throw new Error("Thread not found");
     }
-    if (thread.user_id !== userId) {
-      throw new Error("Unauthorized");
-    }
-
     // Fetch first user & assistant messages
     const messages = await ctx.runQuery(api.messages.getMessages, {
       threadId,
@@ -166,9 +154,6 @@ export const generateThreadTitle = action({
 
     if (messages.length === 0) {
       throw new Error("No messages found to generate title");
-    }
-    if(userId !== messages[0].user_id) {
-      throw new Error("Unauthorized");
     }
 
     const userFirst = messages[0]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
@@ -224,11 +209,11 @@ export const createThread = mutation({
     const defaultTitle = "New Thread";
 
     const threadId = await ctx.db.insert("threads", {
-      user_id: args.userId,
       created_at: Date.now(),
       updated_at: Date.now(),
       error: args.error ?? null,
       title: defaultTitle,
+      user_id: args.userId,
     });
     return threadId;
   },

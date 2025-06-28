@@ -8,7 +8,6 @@ export const createMessage = mutation({
     role: v.union(v.literal("user"), v.literal("assistant")),
     threadId: v.id("threads"),
     isComplete: v.boolean(),
-    userId: v.optional(v.string()),
     content: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -17,7 +16,6 @@ export const createMessage = mutation({
       role: args.role,
       isComplete: args.isComplete,
       error: null,
-      user_id: args.userId || undefined,
       created_at: Date.now(),
       updated_at: Date.now()
     });
@@ -49,6 +47,7 @@ export const createMessageChunk = mutation({
 export const updateMessage = mutation({
   args: {
     messageId: v.id("messages"),
+    userId: v.string(),
     isComplete: v.boolean(),
   },
   handler: async (ctx, args) => {
@@ -63,6 +62,7 @@ export const updateMessage = mutation({
       if (message) {
         await ctx.scheduler.runAfter(0, api.chat.generateThreadTitle, {
           threadId: message.thread_id as Id<"threads">,
+          userId: ""
         });
       }
     }

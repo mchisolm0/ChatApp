@@ -5,7 +5,6 @@ export default defineSchema({
   messages: defineTable({
     isComplete: v.boolean(),
     error: v.union(v.null(), v.string()),
-    user_id: v.optional(v.string()),
     role: v.union(v.literal("user"), v.literal("assistant")),
     thread_id: v.id("threads"),
     created_at: v.number(),

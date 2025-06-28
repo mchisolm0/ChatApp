@@ -17,6 +17,7 @@ const FLUSH_INTERVAL = 200; // ms
 export const generateAssistantMessage = internalAction({
   args: {
     threadId: v.id("threads"),
+    userId: v.string(),
     content: v.string(),
     model: v.string(),
     assistantMessageId: v.id("messages"),
@@ -107,6 +108,7 @@ export const generateAssistantMessage = internalAction({
       // Mark message as complete
       await ctx.runMutation(api.messages.updateMessage, {
         messageId: args.assistantMessageId,
+        userId: args.userId,
         isComplete: true,
       });
 
@@ -116,6 +118,7 @@ export const generateAssistantMessage = internalAction({
       // Mark message as complete but with error state
       await ctx.runMutation(api.messages.updateMessage, {
         messageId: args.assistantMessageId,
+        userId: args.userId,
         isComplete: true,
       });
 
