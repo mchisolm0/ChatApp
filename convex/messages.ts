@@ -1,6 +1,7 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 
 export const createMessage = mutation({
   args: {
@@ -54,6 +55,17 @@ export const updateMessage = mutation({
     await ctx.db.patch(args.messageId, {
       isComplete: args.isComplete,
     });
+
+    // If the message has been marked complete, kick off an action (asynchronously)
+    // to generate a title for the associated thread.
+    if (args.isComplete) {
+      const message = await ctx.db.get(args.messageId);
+      if (message) {
+        await ctx.scheduler.runAfter(0, api.chat.generateThreadTitle, {
+          threadId: message.thread_id as Id<"threads">,
+        });
+      }
+    }
   },
 });
 

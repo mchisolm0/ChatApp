@@ -4,7 +4,7 @@ import { Id } from "./_generated/dataModel";
 import { query, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
 
-import { generateText, CoreMessage } from "ai";
+import { generateText, CoreMessage, streamText } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
 const openrouter = createOpenRouter({
@@ -89,9 +89,15 @@ export const startChatMessagePair = action({
     assistantMessageId: v.id("messages"),
   }),
   handler: async (ctx, { threadId, content, model }): Promise<{ threadId: Id<"threads">; assistantMessageId: Id<"messages"> }> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized: Please sign in.");
+    }
+    const userId = identity.tokenIdentifier;
     if (!threadId) {
       threadId = await ctx.runMutation(api.chat.createThread, {
         error: undefined,
+        userId,
       });
     }
 
@@ -142,10 +148,15 @@ export const generateThreadTitle = action({
   returns: v.object({ title: v.string() }),
   handler: async (ctx, { threadId }): Promise<{ title: string }> => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = identity?.tokenIdentifier;
+
+    const thread = await ctx.runQuery(api.chat.getThreadById, { threadId });
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+    if (thread.user_id !== userId) {
       throw new Error("Unauthorized");
     }
-    const userId = identity.tokenIdentifier;
 
     // Fetch first user & assistant messages
     const messages = await ctx.runQuery(api.messages.getMessages, {
@@ -162,11 +173,14 @@ export const generateThreadTitle = action({
 
     const userFirst = messages[0]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
     const assistantFirst = messages[1]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
+    const systemPrompt = "You are an assistant that returns ONLY a concise title. • Max 6 words. • Max 30 characters. • Avoid quotation marks or punctuation at the end. • Reply with the title text ONLY.";
+
     const requestMessages: CoreMessage[] = [
-      { role: "system", content: "You are an assistant that returns ONLY a concise title. • Max 6 words. • Max 30 characters. • Avoid quotation marks or punctuation at the end. • Reply with the title text ONLY." },
       { role: "user", content: userFirst },
-      { role: "assistant", content: assistantFirst },
     ];
+    if (assistantFirst.trim().length > 0) {
+      requestMessages.push({ role: "assistant", content: assistantFirst });
+    }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
@@ -179,8 +193,9 @@ export const generateThreadTitle = action({
       return { title: fallbackTitle };
     }
 
-    const { text: rawTitle } = await generateText({
+    const { text: rawTitle } = await streamText({
       model: openrouter(FREE_MODELS[0]),
+      system: systemPrompt,
       messages: requestMessages,
     });
 
@@ -189,7 +204,7 @@ export const generateThreadTitle = action({
       let words = compressed.split(" ").slice(0, 6).join(" ");
       return words.length ? words : "Untitled Thread";
     };
-    const title = sanitizeTitle(rawTitle.trim());
+    const title = sanitizeTitle(await rawTitle);
 
     await ctx.runMutation(api.chat.updateThreadTitle, {
       threadId,
@@ -202,19 +217,14 @@ export const generateThreadTitle = action({
 export const createThread = mutation({
   args: {
     error: v.optional(v.string()),
+    userId: v.string(),
   },
   returns: v.id("threads"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
-    const userId = identity.tokenIdentifier;
-
     const defaultTitle = "New Thread";
 
     const threadId = await ctx.db.insert("threads", {
-      user_id: userId,
+      user_id: args.userId,
       created_at: Date.now(),
       updated_at: Date.now(),
       error: args.error ?? null,
