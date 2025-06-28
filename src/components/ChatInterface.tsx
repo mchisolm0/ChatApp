@@ -31,30 +31,11 @@ import { useAction, useConvexAuth, useQuery } from 'convex/react';
 import { api } from 'convex/_generated/api';
 import { Message } from './Message';
 import { Id } from 'convex/_generated/dataModel';
+import { FREE_MODELS } from '@/services/models';
 
 interface ChatInterfaceProps {
   apiEndpoint?: string;
 }
-
-const AVAILABLE_MODELS = [
-  'openai/gpt-4',
-  'openai/gpt-3.5-turbo',
-  'anthropic/claude-2',
-  'google/palm-2-chat-bison',
-  'meta-llama/llama-2-70b-chat',
-];
-
-const FREE_MODELS = [
-  'google/gemma-3-4b-it:free',
-  'google/gemma-3-12b-it:free',
-  'rekaai/reka-flash-3:free',
-  'microsoft/phi-4-reasoning-plus-04-30:free',
-  'google/gemini-2.5-pro-exp-03-25',
-  'google/gemma-3-27b-it',
-  'deepseek/deepseek-r1-0528:free',
-  'deepseek/deepseek-chat-v3-0324:free',
-  'google/gemini-2.0-flash-001',
-];
 
 export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: ChatInterfaceProps) {
   const { threadId } = useLocalSearchParams<{ threadId?: Id<'threads'> | undefined }>();
