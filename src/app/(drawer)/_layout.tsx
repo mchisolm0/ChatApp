@@ -13,15 +13,24 @@ export default function ChatScreen() {
 
   const { isAuthenticated, isLoading } = useConvexAuth();
 
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
-  if (!isAuthenticated || isLoading) {
-    return <Redirect href={'/sign-in'} />
+  // Always call hooks in the same order. Gate the query with "skip" when the user is
+  // not authenticated so the hook call is still executed after sign-out.
+  const filteredThreads = useQuery(
+    api.chat.searchThreadsByTitle,
+    isAuthenticated ? { searchQuery } : "skip"
+  );
+
+  // While loading, render nothing to avoid flicker.
+  if (isLoading) {
+    return null;
   }
 
-  const filteredThreads = useQuery(api.chat.searchThreadsByTitle, {
-    searchQuery,
-  })
+  // Redirect unauthenticated users after hooks have been called.
+  if (!isAuthenticated) {
+    return <Redirect href={'/sign-in'} />;
+  }
 
   const handleLogin = () => {
     router.push("/sign-in")
