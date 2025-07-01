@@ -37,17 +37,14 @@ export const listMessagesByThread = query({
   },
 });
 
-export const getThreadById = query({
-  args: { threadId: v.id("threads"), userId: v.string() },
+export const getIfThreadExists = query({
+  args: { threadId: v.id("threads") },
   handler: async (ctx, args) => {
     const thread = await ctx.db.get(args.threadId);
     if (!thread) {
-      throw new Error("Thread not found.");
+      return false;
     }
-    if (thread.user_id !== args.userId) {
-      throw new Error("Forbidden: thread does not belong to this user.");
-    }
-    return thread;
+    return true;
   },
 });
 
@@ -74,7 +71,7 @@ export const searchThreadsByTitle = query({
 
 export const startChatMessagePair = action({
   args: {
-    threadId: v.optional(v.id('threads')),
+    threadId: v.id("threads"),
     content: v.string(),
     model: v.optional(v.string()),
   },
@@ -88,11 +85,15 @@ export const startChatMessagePair = action({
     if (!userId) {
       throw new Error("Unauthorized: Please sign in.");
     }
-    if (!threadId) {
-      threadId = await ctx.runMutation(api.chat.createThread, {
-        error: undefined,
-        userId,
+    if (threadId) {
+      // Check if thread exists
+      // False if thread does not exist
+      const threadExists = await ctx.runQuery(api.chat.getIfThreadExists, {
+        threadId,
       });
+      if (!threadExists) {
+        throw new Error("Thread not found.");
+      }
     }
 
     await ctx.runMutation(api.messages.createMessage, {
@@ -139,11 +140,11 @@ export const updateThreadTitle = mutation({
 
 // Generate a succinct title for the thread based on the first message pair
 export const generateThreadTitle = action({
-  args: { threadId: v.id("threads"), userId: v.string() },
+  args: { threadId: v.id("threads") },
   returns: v.object({ title: v.string() }),
-  handler: async (ctx, { threadId, userId }): Promise<{ title: string }> => {
-    const thread = await ctx.runQuery(api.chat.getThreadById, { threadId, userId });
-    if (!thread) {
+  handler: async (ctx, { threadId }): Promise<{ title: string }> => {
+    const threadExists = await ctx.runQuery(api.chat.getIfThreadExists, { threadId });
+    if (!threadExists) {
       throw new Error("Thread not found");
     }
     // Fetch first user & assistant messages
@@ -156,8 +157,8 @@ export const generateThreadTitle = action({
       throw new Error("No messages found to generate title");
     }
 
-    const userFirst = messages[0]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
-    const assistantFirst = messages[1]?.messageChunks.map((chunk) => chunk.content).join("") ?? "";
+    const userFirst = messages[0]?.content ?? "";
+    const assistantFirst = messages[1]?.content ?? "";
     const systemPrompt = "You are an assistant that returns ONLY a concise title. • Max 6 words. • Max 30 characters. • Avoid quotation marks or punctuation at the end. • Reply with the title text ONLY.";
 
     const requestMessages: CoreMessage[] = [
@@ -178,18 +179,27 @@ export const generateThreadTitle = action({
       return { title: fallbackTitle };
     }
 
-    const { text: rawTitle } = await streamText({
+    const response = await generateText({
       model: openrouter(FREE_MODELS[0]),
       system: systemPrompt,
       messages: requestMessages,
     });
-
+    
+    console.log('Title generation response:', JSON.stringify(response, null, 2));
+    
     const sanitizeTitle = (raw: string): string => {
+      if (!raw || typeof raw !== 'string') {
+        console.warn('Invalid title input:', raw);
+        return "Untitled Thread";
+      }
       const compressed = raw.replace(/\s+/g, " ").trim();
-      let words = compressed.split(" ").slice(0, 6).join(" ");
+      const words = compressed.split(" ").slice(0, 6).join(" ");
       return words.length ? words : "Untitled Thread";
     };
-    const title = sanitizeTitle(await rawTitle);
+    
+    const rawTitle = response?.text || '';
+    const title = sanitizeTitle(rawTitle);
+    console.log('Generated title:', title);
 
     await ctx.runMutation(api.chat.updateThreadTitle, {
       threadId,
@@ -206,14 +216,34 @@ export const createThread = mutation({
   },
   returns: v.id("threads"),
   handler: async (ctx, args) => {
-    const defaultTitle = "New Thread";
-
     const threadId = await ctx.db.insert("threads", {
+      error: args.error ?? null,
+      user_id: args.userId,
       created_at: Date.now(),
       updated_at: Date.now(),
+      title: "New Thread",
+    });
+    return threadId;
+  },
+});
+
+export const createUserThread = mutation({
+  args: {
+    error: v.optional(v.string()),
+  },
+  returns: v.id("threads"),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized: Please sign in.");
+    }
+    const userId = identity.tokenIdentifier;
+    const threadId = await ctx.db.insert("threads", {
       error: args.error ?? null,
-      title: defaultTitle,
-      user_id: args.userId,
+      user_id: userId,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+      title: "New Thread",
     });
     return threadId;
   },

@@ -27,7 +27,7 @@ import {
 } from '@/styles/chat';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useAction, useConvexAuth, useQuery } from 'convex/react';
+import { useMutation, useAction, useConvexAuth, useQuery } from 'convex/react';
 import { api } from 'convex/_generated/api';
 import { Message } from './Message';
 import { Id } from 'convex/_generated/dataModel';
@@ -39,7 +39,7 @@ interface ChatInterfaceProps {
 
 export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: ChatInterfaceProps) {
   const { threadId } = useLocalSearchParams<{ threadId?: Id<'threads'> | undefined }>();
-  const parsedThreadId = threadId ? threadId : undefined;
+  let parsedThreadId = threadId ? threadId : undefined;
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
   const [isModelPickerVisible, setIsModelPickerVisible] = useState(false);
 
@@ -52,19 +52,26 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
   const { isAuthenticated } = useConvexAuth();
 
   const startChat = useAction(api.chat.startChatMessagePair);
+  const createUserThread = useMutation(api.chat.createUserThread);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
     try {
       setIsSending(true);
+      let currentThreadId = parsedThreadId;
+      if (!currentThreadId) {
+         currentThreadId = await createUserThread({
+          error: undefined,
+        });
+      }
       const { threadId } = await startChat({
-        threadId: parsedThreadId,
+        threadId: currentThreadId,
         content: input,
         model: selectedModel,
       });
       setInput('');
       setError(null);
-      if (threadId) {
+      if (threadId && threadId !== parsedThreadId) {
         router.replace(`/${threadId}`);
       }
     } catch (err) {
@@ -130,7 +137,7 @@ export const ChatInterface = observer(function ChatInterface({ apiEndpoint }: Ch
             <Message
               key={message._id}
               role={message.role}
-              content={message.messageChunks.map((chunk: { content: string }) => chunk.content).join('')}
+              content={message.content}
               isComplete={message.isComplete}
             />
           )}

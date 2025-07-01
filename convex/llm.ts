@@ -30,16 +30,16 @@ export const generateAssistantMessage = internalAction({
       });
 
       const fullPrompt = [
-        ...messages.map((m: { role: string; messageChunks: { content: string }[] }) => ({
+        ...messages.map((m: { role: string; content: string }) => ({
           role: m.role,
-          content: m.messageChunks.map((chunk: { content: string }) => chunk.content).join('')
+          content: m.content
         })),
         { role: "user", content: args.content },
       ];
 
       const result = streamText({
         model: openrouter(args.model),
-        system: `You are helpful assistant.`,
+        system: `You are a helpful assistant that provides clear, concise responses. Be direct and to the point, using as few words as possible while still being helpful and conversational. Avoid unnecessary explanations unless specifically asked.`,
         messages: fullPrompt as CoreMessage[],
       });
 
@@ -108,9 +108,15 @@ export const generateAssistantMessage = internalAction({
       // Mark message as complete
       await ctx.runMutation(api.messages.updateMessage, {
         messageId: args.assistantMessageId,
-        userId: args.userId,
         isComplete: true,
       });
+
+      // Generate a concise thread title only if this is the first assistant message
+      if (messages.length === 2) {
+        await ctx.scheduler.runAfter(0, api.chat.generateThreadTitle, {
+          threadId: args.threadId,
+        });
+      }
 
     } catch (error) {
       console.error("Error in generateAssistantMessage:", error);
@@ -118,7 +124,6 @@ export const generateAssistantMessage = internalAction({
       // Mark message as complete but with error state
       await ctx.runMutation(api.messages.updateMessage, {
         messageId: args.assistantMessageId,
-        userId: args.userId,
         isComplete: true,
       });
 

@@ -47,25 +47,12 @@ export const createMessageChunk = mutation({
 export const updateMessage = mutation({
   args: {
     messageId: v.id("messages"),
-    userId: v.string(),
     isComplete: v.boolean(),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.messageId, {
       isComplete: args.isComplete,
     });
-
-    // If the message has been marked complete, kick off an action (asynchronously)
-    // to generate a title for the associated thread.
-    if (args.isComplete) {
-      const message = await ctx.db.get(args.messageId);
-      if (message) {
-        await ctx.scheduler.runAfter(0, api.chat.generateThreadTitle, {
-          threadId: message.thread_id as Id<"threads">,
-          userId: ""
-        });
-      }
-    }
   },
 });
 
@@ -86,8 +73,7 @@ export const getMessages = query({
     const messages = await (args.limit ? query.take(args.limit) : query.collect());
     messages.reverse(); // Put them back in chronological order
 
-    // Fetch chunks for each message
-    const messagesWithChunks = await Promise.all(
+    const completeMessages = await Promise.all(
       messages.map(async (message) => {
         const chunks = await ctx.db
           .query("messageChunks")
@@ -97,13 +83,22 @@ export const getMessages = query({
           .order("asc")
           .collect();
 
+        // Combine all chunks into a single content string.
+        // If there are no chunks (e.g. for the original user message),
+        // fall back to the `content` column that was stored when the
+        // message was first created.
+        const content = chunks.length
+          ? chunks.map(chunk => chunk.content).join("")
+          : ((message as any).content ?? "");
+
         return {
           ...message,
-          messageChunks: chunks
+          content,  // Add the combined content
+          _creationTime: message._creationTime  // Ensure _creationTime is included
         };
       })
     );
 
-    return messagesWithChunks;
+    return completeMessages;
   },
 });
