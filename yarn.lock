@@ -3345,6 +3345,11 @@ acorn@^8.1.0, acorn@^8.11.0, acorn@^8.14.0, acorn@^8.15.0, acorn@^8.4.1, acorn@^
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
 
+adb@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/adb/-/adb-0.2.0.tgz#622d803b3fcc0d004751fc07661856442e3eb3c1"
+  integrity sha512-Ml/fzYnxu4q7cDeKDmh3mzE1HC+YN/wWiTxNZ3pBeLfcdj3/uBev74UUraUrvj9pzAiel0yF8S5XNMNFQnNdIA==
+
 agent-base@6:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-6.0.2.tgz#49fff58577cfee3f37176feab4c22e00f86d7f77"
